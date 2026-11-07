@@ -39,6 +39,14 @@ Das Portal ist in fünf Schritte gegliedert: WLAN, Standort (Suche oder Koordina
 - Den Tagesverbrauch an Credits rechnet das Portal live aus der Reichweite und dem Intervall aus.
 - Geheimnisse werden nach dem Speichern nie wieder angezeigt.
 
+## Umsetzungsstand
+
+- **M2:** Statt des Radars zeigt das Gerät vorerst einen Statusbildschirm (WLAN, IP, Standort, Radius, Credit-Verbrauch) mit den Schaltflächen Setup, Kalibr. und Diagnose.
+- **Abweichungen des Portals vom Mockup:**
+  - Die Ortssuche (Geocoding) folgt in M5; bis dahin werden Koordinaten eingegeben.
+  - „Verbindung testen“ für OpenSky folgt in M3.
+- **Ausrichtung:** Die Oberfläche ist für das Hochformat (Rotation 0) ausgelegt.
+
 ## Gestaltungsregeln
 
 - Dunkles, sachliches Aviation-Design. Lesbarkeit und Performance haben Vorrang vor Effekten.

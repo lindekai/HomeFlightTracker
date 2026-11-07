@@ -54,10 +54,38 @@ Optional geht das Kompilieren auch auf der Kommandozeile mit `arduino-cli`:
 arduino-cli compile -b esp32:esp32:esp32:PartitionScheme=min_spiffs HomeFlightTracker
 ```
 
-## 5. Recovery
+## 5. Gerät einrichten (ohne PC)
+
+1. Gerät einschalten. Ohne vollständige Konfiguration zeigt es **„Setup erforderlich“** mit:
+   - WLAN-Name `HomeFlightTracker-Setup`
+   - einem **zufälligen WLAN-Passwort** (bei jedem Setup-Start neu, nur am Display sichtbar)
+   - der Adresse `http://192.168.4.1`
+2. Mit dem Smartphone in diesem WLAN anmelden. Die Einrichtungsseite öffnet sich automatisch (Captive Portal). Falls nicht: im Browser `http://192.168.4.1` öffnen.
+3. Auf der Einrichtungsseite ausfüllen:
+   - **WLAN:** Netz suchen oder eingeben, Passwort, optional „Verbindung testen“.
+   - **Standort:** Breite und Länge in Dezimalgrad, optional eine Bezeichnung. Die Ortssuche folgt in M5.
+   - **OpenSky:** Client-ID und Client-Secret des API-Clients aus dem OpenSky-Konto. Ohne Zugang läuft nur der anonyme Notbetrieb mit mindestens 300 s Intervall.
+   - **Radar:** Reichweite und Abrufintervall. Die Seite rechnet den Tagesverbrauch an Credits live aus. Intervalle, die mehr als 80 % des Tageskontingents verplanen, werden abgelehnt.
+   - **Geräte-Passwort:** mindestens 8 Zeichen. Schützt die Weboberfläche im Heimnetz (Benutzer `admin`).
+4. **Speichern & neu starten.** Das Gerät verbindet sich mit dem Heimnetz und zeigt den Statusbildschirm.
+
+Der Setup-Modus endet nach **15 Minuten** ohne Abschluss. Bei unvollständiger Konfiguration startet er dann mit einem neuen Passwort neu.
+
+### Spätere Änderungen
+
+- Im Heimnetz `http://<IP-Adresse>` oder `http://homeflighttracker.local` öffnen. Die IP-Adresse steht im Statusbildschirm. mDNS funktioniert nicht in jedem Netz und auf jedem Gerät; die IP-Adresse geht immer.
+- Anmelden mit Benutzer `admin` und dem Geräte-Passwort.
+- Leere Passwort- und Secret-Felder bedeuten „unverändert“. Gespeicherte Geheimnisse werden nie angezeigt.
+- Neues WLAN, wenn das alte nicht mehr erreichbar ist: im Statusbildschirm **Setup** → **Ja**.
+
+## 6. Recovery
 
 | Problem | Lösung |
 |---|---|
-| Touch reagiert falsch oder Schaltflächen sind nicht treffbar | Beim Start, solange „Neu kalibrieren: jetzt Display antippen“ angezeigt wird (2,5 s), das Display berühren. |
-| Hardware-Einstellungen zurücksetzen | Seriell `x` senden: Rotation und Kalibrierung werden gelöscht, danach Neustart. |
-| Vollständiger Werksreset | Folgt in M2 (lokal am Gerät auslösbar). |
+| Touch reagiert falsch oder Schaltflächen sind nicht treffbar | Beim Start (2,5 s lang) das Display kurz antippen: Neukalibrierung. |
+| Geräte-Passwort vergessen oder Gerät unbrauchbar konfiguriert | **Werksreset:** beim Start das Display antippen und **8 Sekunden gedrückt halten** (Countdown). Löscht alle Einstellungen inkl. Kalibrierung. Loslassen vorher bricht ab. |
+| Diagnose (Testbild, Touch-Test, Heap) | Statusbildschirm → **Diagnose**. Zurück über Info → **Neustart**. |
+
+Der Werksreset ist absichtlich nur lokal am Gerät auslösbar und nicht über das Netz.
+
+Serielle Befehle (115200 Baud) im Normalbetrieb: `h` Heap, `s` Setup-Modus, `d` Diagnose, `?` Hilfe.

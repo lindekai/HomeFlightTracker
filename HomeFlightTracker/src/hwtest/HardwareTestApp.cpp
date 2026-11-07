@@ -9,7 +9,7 @@
 namespace {
 
 const char* const kTouchTestButtons[] = {"Testbild", "Kalibr.", "Drehen", "Info"};
-const char* const kInfoButtons[] = {"Touch", "Licht", "Testbild"};
+const char* const kInfoButtons[] = {"Touch", "Licht", "Neustart"};
 constexpr uint8_t kTouchTestButtonCount = sizeof(kTouchTestButtons) / sizeof(kTouchTestButtons[0]);
 constexpr uint8_t kInfoButtonCount = sizeof(kInfoButtons) / sizeof(kInfoButtons[0]);
 
@@ -79,7 +79,7 @@ bool HardwareTestApp::showBootScreenAndCheckRecovery() {
   tft_.setTextColor(TFT_GREEN, TFT_BLACK);
   tft_.drawString("HomeFlightTracker", cx, cy - 40, 2);
   tft_.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft_.drawString("Hardwaretest M1", cx, cy - 10, 4);
+  tft_.drawString("Diagnose", cx, cy - 10, 4);
   tft_.setTextColor(TFT_LIGHTGREY, TFT_BLACK);
   tft_.drawString("Neu kalibrieren:", cx, cy + 30, 2);
   tft_.drawString("jetzt Display antippen", cx, cy + 50, 2);
@@ -336,7 +336,7 @@ void HardwareTestApp::handleTouch(const TouchState& touch) {
           testBacklight();
           break;
         case 2:
-          showScreen(Screen::TestPattern);
+          ESP.restart();
           break;
         default:
           break;

@@ -1,8 +1,10 @@
 // HomeFlightTracker – Flugradar für AZ-Touch MOD (ESP32) mit Positionsdaten des OpenSky Network.
-// Stand: Meilenstein M1 (Hardware-Machbarkeitstest). Einrichtung: docs/setup.md, Tests: docs/testing.md
+// Stand: Meilenstein M2 (Konfiguration und WLAN-Einrichtung). Einrichtung: docs/setup.md
 
 #include <TFT_eSPI.h>
 
+#include "src/app/App.h"
+#include "src/app/BootRequest.h"
 #include "src/board/BoardPins.h"
 #include "src/hwtest/HardwareTestApp.h"
 
@@ -20,7 +22,9 @@ static_assert(TFT_BL == board::kPinTftBacklight, "tft_setup.h und BoardPins.h wi
 static_assert(TOUCH_CS == board::kPinTouchCs, "tft_setup.h und BoardPins.h widersprechen sich (TOUCH_CS)");
 
 TFT_eSPI tft;
-HardwareTestApp app(tft);
+App app(tft);
+HardwareTestApp diagnostics(tft);
+bool diagnosticsMode = false;
 
 void setup() {
   // Piezo-Treiber hat keinen Pull-down: Pin sofort definiert auf LOW halten (stumm).
@@ -29,10 +33,21 @@ void setup() {
 
   Serial.begin(115200);
   Serial.println();
-  Serial.println("HomeFlightTracker - Hardwaretest (M1)");
-  app.begin();
+  Serial.println("HomeFlightTracker");
+
+  const BootRequest request = takeBootRequest();
+  diagnosticsMode = request == BootRequest::Diagnostics;
+  if (diagnosticsMode) {
+    diagnostics.begin();
+  } else {
+    app.begin(request == BootRequest::Setup);
+  }
 }
 
 void loop() {
-  app.loop();
+  if (diagnosticsMode) {
+    diagnostics.loop();
+  } else {
+    app.loop();
+  }
 }

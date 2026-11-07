@@ -1,6 +1,6 @@
-// Hardware-Machbarkeitstest (Meilenstein M1): Testbild und Rotation, Hintergrundbeleuchtung,
+// Diagnosemodus (Hardware-Machbarkeitstest aus M1): Testbild und Rotation, Hintergrundbeleuchtung,
 // Touch-Kalibrierung mit Trefferzonen sowie Heap-Basiswerte inkl. Sprite-Machbarkeit.
-// Wird ab M4 durch die eigentliche Radar-Oberfläche ersetzt.
+// Start über „Diagnose“ im Statusbildschirm; „Neustart“ im Info-Bildschirm kehrt in den Normalbetrieb zurück.
 #pragma once
 
 #include <TFT_eSPI.h>

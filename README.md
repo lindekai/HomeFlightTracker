@@ -9,7 +9,7 @@ Eigenständiges Tisch- und Wandgerät, das Flugbewegungen rund um einen frei wä
 </p>
 <p align="center"><sub>Mockups der geplanten Oberfläche (240 × 320 px, Beispieldaten). Weitere Entwürfe: <a href="docs/ui.md">docs/ui.md</a></sub></p>
 
-> **Projektstatus:** in Entwicklung. Abgeschlossen ist der Hardware-Machbarkeitstest (Meilenstein M1). Das Radar selbst entsteht ab M4, siehe [Roadmap](#roadmap).
+> **Projektstatus:** in Entwicklung. Abgeschlossen ist der Hardware-Machbarkeitstest (M1); die Einrichtung ohne PC (M2) wird getestet. Das Radar selbst entsteht ab M4, siehe [Roadmap](#roadmap).
 
 ## Funktionen (Ziel des MVP)
 
@@ -42,7 +42,9 @@ Pinbelegung mit Quellen und Prüfstatus: **[docs/hardware.md](docs/hardware.md)*
 3. `HomeFlightTracker/HomeFlightTracker.ino` öffnen, Board **ESP32 Dev Module** und Partitionsschema **Minimal SPIFFS** wählen.
 4. Hochladen und den seriellen Monitor mit 115200 Baud öffnen.
 
-Die Bibliothek TFT_eSPI muss **nicht** verändert werden: Die Pin-Konfiguration liegt als `tft_setup.h` im Sketch-Ordner. Die ausführliche Anleitung steht in **[docs/setup.md](docs/setup.md)**.
+Die Bibliothek TFT_eSPI muss **nicht** verändert werden: Die Pin-Konfiguration liegt als `tft_setup.h` im Sketch-Ordner.
+
+Danach richtet man das Gerät per Smartphone ein: Es startet einen geschützten Setup-Access-Point, Passwort und Adresse stehen auf dem Display. Die ausführliche Anleitung inklusive Werksreset steht in **[docs/setup.md](docs/setup.md)**.
 
 ## Verzeichnisstruktur
 
@@ -52,13 +54,18 @@ HomeFlightTracker/
 │   ├── HomeFlightTracker.ino     Einstiegspunkt
 │   ├── tft_setup.h               TFT_eSPI-Konfiguration für AZ-Touch MOD
 │   └── src/                      Module (von der Arduino IDE automatisch mitkompiliert)
+│       ├── app/                  Ablaufsteuerung, Betriebsarten
 │       ├── board/                feste Pinbelegung der Trägerplatine
 │       ├── config/               dauerhafte Einstellungen (NVS)
 │       ├── diag/                 Heap- und Ressourcenmessung
-│       ├── hwtest/               Hardware-Machbarkeitstest (M1)
-│       └── ui/                   Touch-Eingabe und Oberfläche
+│       ├── geo/                  Distanz, Peilung, Bounding Box
+│       ├── hwtest/               Diagnosemodus (Hardwaretest)
+│       ├── net/                  WLAN, Setup-Portal, Weboberfläche
+│       ├── opensky/              OpenSky-Kontingent (ab M3: API-Client)
+│       └── ui/                   Touch-Eingabe und Bedienelemente
 ├── docs/                         Projektdokumentation
 │   └── mockups/                  Oberflächenentwürfe (SVG)
+├── tests/host/                   Unit-Tests für den Entwicklungsrechner
 ├── CHANGELOG.md
 └── README.md
 ```
@@ -82,8 +89,8 @@ Die geplante Struktur der späteren Module steht in [docs/architecture.md](docs/
 | Meilenstein | Inhalt | Status |
 |---|---|---|
 | M0 | Projektgerüst, Dokumentation, Pin-Matrix | ✅ erledigt |
-| M1 | Hardware-Machbarkeit: Display, Rotation, Backlight, Touch-Kalibrierung, Heap-Basiswerte | 🧪 Code fertig, Test auf Hardware ausstehend |
-| M2 | Konfiguration und WLAN-Provisioning (Setup-AP, Captive Portal, Web-UI, Werksreset) | geplant |
+| M1 | Hardware-Machbarkeit: Display, Rotation, Backlight, Touch-Kalibrierung, Heap-Basiswerte | ✅ abgenommen |
+| M2 | Konfiguration und WLAN-Provisioning (Setup-AP, Captive Portal, Web-UI, Werksreset) | 🧪 Code fertig, Test auf Hardware läuft |
 | M3 | OpenSky-Client (NTP, TLS, OAuth2, Bounding Box, JSON, Kontingent, Backoff) | geplant |
 | M4 | Radar-Oberfläche (Symbole, Details, Liste, Reichweite, Status) | geplant |
 | M5 | Robustheit (Geocoding, mDNS, Watchdog, Langzeittest, Review, Release) | geplant |
@@ -102,6 +109,10 @@ Die Flugpositionen stammen vom **OpenSky Network** (<https://opensky-network.org
 
 - Es werden keine Zugangsdaten im Repository gespeichert. Konfigurationsbeispiele enthalten nur Platzhalter.
 - Einstellungen und Zugangsdaten liegen im NVS des ESP32. Ohne aktivierte Flash-Verschlüsselung sind sie **nicht verschlüsselt** und mit physischem Zugriff auf das Gerät auslesbar.
+- Der Setup-Access-Point ist WPA2-geschützt. Das Passwort wird bei jedem Setup-Start zufällig erzeugt und nur am Display angezeigt. Nach 15 Minuten endet der Setup-Modus.
+- Die Weboberfläche im Heimnetz verlangt eine HTTP-Digest-Anmeldung. Die Verbindung ist jedoch **unverschlüsseltes HTTP**: Neu eingegebene Geheimnisse werden im Heimnetz im Klartext übertragen.
+- Gespeicherte Geheimnisse werden nie an den Browser zurückgegeben und nie geloggt.
+- Ein Werksreset ist nur lokal am Gerät möglich.
 
 ## Lizenz
 

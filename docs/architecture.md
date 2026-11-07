@@ -36,31 +36,59 @@ Grundregeln:
 
 ```text
 HomeFlightTracker/                    Sketch-Ordner
-├── HomeFlightTracker.ino             Einstieg, Pinprüfung, Start der App
+├── HomeFlightTracker.ino             Einstieg, Pinprüfung, Wahl Normal-/Diagnosemodus
 ├── tft_setup.h                       TFT_eSPI-Pins (siehe docs/setup.md)
 └── src/
-    ├── board/BoardPins.h             feste Pinbelegung der Trägerplatine          [M1]
-    ├── config/HardwareSettings.*     Rotation + Touch-Kalibrierung im NVS         [M1]
-    ├── config/AppConfig.*            WLAN, Standort, OpenSky, Reichweite, Intervall [M2]
-    ├── diag/HeapReport.*             Heap-Messung                                  [M1]
-    ├── hwtest/HardwareTestApp.*      Hardware-Machbarkeitstest                     [M1]
-    ├── net/WifiManager.*             Verbindung, Reconnect, Setup-AP               [M2]
-    ├── net/SetupPortal.*             Captive Portal, Web-UI, Authentifizierung     [M2]
-    ├── net/TimeSync.*                NTP                                           [M3]
-    ├── opensky/TokenClient.*         OAuth2 Client Credentials, Token-Erneuerung   [M3]
-    ├── opensky/StatesClient.*        /states/all, JSON-Filter, Fehlerbehandlung    [M3]
-    ├── opensky/QuotaTracker.*        Credit-Budget, Rate-Limit-Header, Backoff     [M3]
-    ├── model/FlightStore.*           feste Tabelle (max. 100), Snapshot            [M3]
-    ├── geo/Geo.*                     Distanz, Peilung, Bounding Box, Projektion    [M3]
-    ├── ui/TouchInput.*               Kalibrierung, Touch-Ereignisse                [M1]
-    ├── ui/RadarRenderer.*            Radar, Symbole, Status                        [M4]
-    ├── ui/Screens.*                  Details, Liste, Menü, Statusbildschirme       [M4]
-    └── app/App.*                     Zustandsautomat der Betriebszustände          [M4]
+    ├── app/App.*                     Ablaufsteuerung: Start/Recovery, Setup-, Normalbetrieb     [M2]
+    ├── app/BootRequest.*             Startwunsch über Software-Neustart (RTC-Speicher)         [M2]
+    ├── board/BoardPins.h             feste Pinbelegung der Trägerplatine                       [M1]
+    ├── config/HardwareSettings.*     Rotation + Touch-Kalibrierung im NVS                      [M1]
+    ├── config/AppConfig.*            WLAN, Standort, OpenSky, Radar, Geräte-Passwort im NVS    [M2]
+    ├── diag/HeapReport.*             Heap-Messung                                               [M1]
+    ├── geo/Geo.*                     Distanz, Peilung, Bounding Box (host-getestet)             [M2]
+    ├── hwtest/HardwareTestApp.*      Diagnosemodus (Hardwaretest aus M1)                        [M1]
+    ├── net/WifiManager.*             Station mit Reconnect, Setup-AP, Scan, Verbindungstest     [M2]
+    ├── net/SetupPortal.*             Captive Portal, Web-UI, JSON-API, Digest-Auth             [M2]
+    ├── net/PortalPage.h              HTML/JS der Weboberfläche                                  [M2]
+    ├── opensky/Quota.*               Credit-Berechnung, zulässige Intervalle (host-getestet)    [M2]
+    ├── ui/TouchInput.*               Kalibrierung, Touch-Ereignisse                             [M1]
+    ├── ui/Widgets.*                  Statusleiste, Schaltflächen, Textzeilen                    [M2]
+    ├── net/TimeSync.*                NTP                                                        [M3]
+    ├── opensky/TokenClient.*         OAuth2 Client Credentials, Token-Erneuerung                [M3]
+    ├── opensky/StatesClient.*        /states/all, JSON-Filter, Fehlerbehandlung, Backoff        [M3]
+    ├── model/FlightStore.*           feste Tabelle (max. 100), Snapshot                         [M3]
+    ├── ui/RadarRenderer.*            Radar, Symbole, Status                                     [M4]
+    └── ui/Screens.*                  Details, Liste, Menü, Statusbildschirme                    [M4]
 ```
 
 Die Module ohne Arduino-Abhängigkeit (`geo/`, Parser-Logik, `QuotaTracker`) werden so geschrieben, dass sie sich auf dem Entwicklungsrechner mit einem normalen C++-Compiler testen lassen (siehe [testing.md](testing.md)).
 
-## Betriebszustände (ab M4)
+## Betriebsarten (Stand M2)
+
+| Betriebsart | Auslöser | Verhalten |
+|---|---|---|
+| Setup | keine vollständige Konfiguration, „Setup“ im Statusbildschirm oder seriell `s` | WPA2-Access-Point mit zufälligem Passwort, Captive Portal, Weboberfläche ohne Anmeldung; endet nach 15 min |
+| Normal | vollständige Konfiguration | WLAN-Station mit Reconnect, Weboberfläche im Heimnetz mit Digest-Anmeldung, mDNS, Statusbildschirm |
+| Diagnose | „Diagnose“ im Statusbildschirm oder seriell `d` | Hardwaretest aus M1; „Neustart“ kehrt zurück |
+
+Setup- und Diagnosewunsch werden über einen Software-Neustart im RTC-Speicher weitergereicht. Nach einem Stromausfall startet das Gerät deshalb immer im Normalbetrieb (sofern konfiguriert) und nie mit einem Setup-WLAN.
+
+## Weboberfläche und API
+
+| Methode | Pfad | Zweck |
+|---|---|---|
+| GET | `/` | Einrichtungs- bzw. Konfigurationsseite |
+| GET | `/api/state` | aktuelle Einstellungen ohne Geheimnisse (nur „gespeichert ja/nein“) |
+| GET | `/api/estimate` | Credit-Schätzung für Standort, Reichweite, Intervall, Nutzerstufe |
+| GET | `/api/scan` | WLAN-Suche (asynchron, wird abgefragt) |
+| POST/GET | `/api/wifi/test` | Verbindungstest starten / Ergebnis (nur Setup-Modus) |
+| POST | `/api/config` | Einstellungen prüfen, speichern, Neustart |
+
+- POST-Anfragen müssen den Header `X-HFT: 1` tragen. Fremde Webseiten können ihn ohne CORS-Freigabe nicht setzen; das schützt gegen Cross-Site-Requests.
+- Im Heimnetz verlangt jede Anfrage eine HTTP-Digest-Anmeldung (`admin` + Geräte-Passwort). Das Passwort wird dabei nicht im Klartext übertragen.
+- Die Verbindung selbst ist **unverschlüsselt (HTTP)**: Neu eingegebene Geheimnisse (z. B. ein geändertes OpenSky-Secret) laufen im Heimnetz im Klartext. Im Setup-Modus schützt die WPA2-Verschlüsselung des Access-Points.
+
+## Betriebszustände der Radar-Anzeige (ab M4)
 
 `Start` → `Setup erforderlich` → `WLAN verbinden` → `API verbinden` → `Radar aktiv`
 
@@ -72,14 +100,15 @@ Daneben gibt es die Zustände `Keine Flugzeuge`, `Daten veraltet`, `Auth-/Kontin
 - Die Bounding Box für die Abfrage ergibt sich aus Radius und Puffer. Der Längengrad-Abstand wird mit 1/cos(Breite) skaliert. Polnähe und Datumsgrenze werden gesondert behandelt; an der Datumsgrenze sind zwei Abfragen nötig, oder die Box wird begrenzt.
 - Nach dem Laden wird die tatsächliche Entfernung zum Zentrum geprüft. Flugzeuge außerhalb des Radius werden verworfen.
 
-## Ressourcen (Stand M1, Build mit „Minimal SPIFFS“)
+## Ressourcen (Build mit „Minimal SPIFFS“)
 
-| Größe | Wert |
-|---|---|
-| Programmspeicher | 343 352 Byte (17 % von 1 966 080) |
-| Globale Variablen | 22 516 Byte (6 % von 327 680) |
-| Freier Heap nach Display-Init (ohne WLAN) | 333 156 Byte, größter Block 110 580 Byte |
-| Radar-Sprite 240 × 240 | 8 Bit möglich (59 396 Byte), 16 Bit nicht allozierbar |
+| Größe | M1 | M2 |
+|---|---|---|
+| Programmspeicher | 343 352 Byte (17 %) | 1 097 164 Byte (55 % von 1 966 080) |
+| Globale Variablen | 22 516 Byte (6 %) | 50 568 Byte (15 % von 327 680) |
+| Freier Heap nach Start im Setup-Modus (AP + Webserver) | – | 220 244 Byte, größter Block 110 580 Byte |
+
+Weitere M1-Messung: freier Heap nach Display-Init (ohne WLAN) 333 156 Byte; Radar-Sprite 240 × 240 mit 8 Bit möglich (59 396 Byte), mit 16 Bit nicht allozierbar.
 
 ## Entscheidungen
 
@@ -92,3 +121,5 @@ Daneben gibt es die Zustände `Keine Flugzeuge`, `Daten veraltet`, `Auth-/Kontin
 | E5 | Setup-Portal und OpenSky-Betrieb nicht gleichzeitig | spart Heap (TLS und Webserver parallel sind auf dem WROOM-32 knapp) |
 | E6 | TLS mit Zertifikatsprüfung über das Root-CA-Bundle des ESP32-Cores | keine globale Abschaltung der Prüfung, robuster als ein festgepinntes Zertifikat |
 | E7 | Kein eigener Proxy und kein Cloud-Backend | Das Gerät arbeitet selbstständig. Ein Proxy wird nur erwogen, wenn sich ein belegter Engpass zeigt. |
+| E8 | Weboberfläche über HTTP mit Digest-Anmeldung statt HTTPS | Ein selbstsigniertes Zertifikat auf dem Gerät erzeugt Browserwarnungen und kostet RAM; die Unverschlüsselung im Heimnetz ist dokumentiert |
+| E9 | Werksreset nur lokal (8 s Halten beim Start) | kein Reset über das Netz möglich, auch nicht bei verlorenem Passwort |
