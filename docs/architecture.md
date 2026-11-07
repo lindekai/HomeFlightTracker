@@ -78,7 +78,8 @@ Daneben gibt es die Zustände `Keine Flugzeuge`, `Daten veraltet`, `Auth-/Kontin
 |---|---|
 | Programmspeicher | 343 352 Byte (17 % von 1 966 080) |
 | Globale Variablen | 22 516 Byte (6 % von 327 680) |
-| Freier Heap und Sprite-Machbarkeit | Messung auf der Hardware in M1, siehe [testing.md](testing.md) |
+| Freier Heap nach Display-Init (ohne WLAN) | 333 156 Byte, größter Block 110 580 Byte |
+| Radar-Sprite 240 × 240 | 8 Bit möglich (59 396 Byte), 16 Bit nicht allozierbar |
 
 ## Entscheidungen
 
@@ -87,7 +88,7 @@ Daneben gibt es die Zustände `Keine Flugzeuge`, `Daten veraltet`, `Auth-/Kontin
 | E1 | Arduino IDE statt PlatformIO | Vorgabe der Entwicklungsumgebung. Abhängigkeiten werden versioniert in `setup.md` dokumentiert. |
 | E2 | TFT_eSPI mit eingebautem XPT2046-Touch | auf der Zielhardware erprobt; gemeinsamer SPI-Bus wird unterstützt |
 | E3 | `tft_setup.h` im Sketch statt geänderter Bibliotheksdateien | reproduzierbar, übersteht Bibliotheks-Updates, liegt versioniert im Repo |
-| E4 | Kein PSRAM: Radar-Sprite höchstens 8 Bit (ca. 57 KB) oder Neuzeichnen geänderter Bereiche | Messung in M1 und M3 entscheidet |
+| E4 | Kein PSRAM: Radar-Sprite mit 8 Bit (ca. 58 KB), sonst Neuzeichnen geänderter Bereiche | M1-Messung: 16 Bit nicht allozierbar (größter Block 110 KB); Neubewertung nach TLS-Messung in M3 |
 | E5 | Setup-Portal und OpenSky-Betrieb nicht gleichzeitig | spart Heap (TLS und Webserver parallel sind auf dem WROOM-32 knapp) |
 | E6 | TLS mit Zertifikatsprüfung über das Root-CA-Bundle des ESP32-Cores | keine globale Abschaltung der Prüfung, robuster als ein festgepinntes Zertifikat |
 | E7 | Kein eigener Proxy und kein Cloud-Backend | Das Gerät arbeitet selbstständig. Ein Proxy wird nur erwogen, wenn sich ein belegter Engpass zeigt. |
