@@ -116,4 +116,6 @@ Die Flugpositionen stammen vom **OpenSky Network** (<https://opensky-network.org
 
 ## Lizenz
 
-Noch nicht festgelegt.
+Der Quellcode steht unter der [MIT-Lizenz](LICENSE), © 2026 Kai Linde.
+
+Die Lizenz gilt nur für den Code dieses Projekts. Für die Flugdaten gelten die Nutzungsbedingungen des OpenSky Network. Die verwendeten Bibliotheken haben eigene Lizenzen: TFT_eSPI (MIT/BSD), ArduinoJson (MIT), ESP32-Arduino-Core (LGPL-2.1).

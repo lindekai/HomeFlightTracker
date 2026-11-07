@@ -4,6 +4,10 @@ Format angelehnt an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 ## [Unveröffentlicht]
 
+### Projekt
+
+- MIT-Lizenz hinzugefügt.
+
 ### M2 – Konfiguration und WLAN-Einrichtung
 
 #### Hinzugefügt
