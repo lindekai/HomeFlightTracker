@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="640" viewBox="0 0 240 320" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">
+  <title>HomeFlightTracker – Setup erforderlich (Mockup, 240×320)</title>
+  <rect width="240" height="320" fill="#050b10"/>
+
+  <rect width="240" height="22" fill="#0b1820"/>
+  <circle cx="9" cy="11" r="3.5" fill="#ffb020"/>
+  <text x="16" y="15" font-size="9" fill="#d8e6dc">Setup-AP aktiv</text>
+  <text x="232" y="15" font-size="9" fill="#8fb3a0" text-anchor="end">noch 14:38</text>
+
+  <text x="120" y="50" font-size="14" fill="#ffb020" text-anchor="middle" font-weight="bold">Setup erforderlich</text>
+  <text x="120" y="66" font-size="8.5" fill="#8fb3a0" text-anchor="middle">Einrichtung per Smartphone</text>
+
+  <g font-size="9.5">
+    <circle cx="16" cy="88" r="8" fill="#0d2233" stroke="#2a6f99"/>
+    <text x="16" y="91.5" fill="#d8e6dc" text-anchor="middle">1</text>
+    <text x="30" y="86" fill="#d8e6dc">Mit diesem WLAN verbinden:</text>
+    <text x="30" y="100" fill="#3ddc84" font-weight="bold">HomeFlightTracker-Setup</text>
+
+    <circle cx="16" cy="124" r="8" fill="#0d2233" stroke="#2a6f99"/>
+    <text x="16" y="127.5" fill="#d8e6dc" text-anchor="middle">2</text>
+    <text x="30" y="122" fill="#d8e6dc">WLAN-Passwort (nur hier):</text>
+    <rect x="30" y="128" width="130" height="20" rx="3" fill="#0f1d16" stroke="#1f6f4a"/>
+    <text x="95" y="142" font-size="12" fill="#d8e6dc" text-anchor="middle" letter-spacing="1">7Q4K-M2PX</text>
+
+    <circle cx="16" cy="172" r="8" fill="#0d2233" stroke="#2a6f99"/>
+    <text x="16" y="175.5" fill="#d8e6dc" text-anchor="middle">3</text>
+    <text x="30" y="170" fill="#d8e6dc">Seite öffnet sich automatisch,</text>
+    <text x="30" y="184" fill="#d8e6dc">sonst im Browser:</text>
+    <text x="30" y="198" fill="#3ddc84" font-weight="bold">http://192.168.4.1</text>
+  </g>
+
+  <line x1="8" y1="214" x2="232" y2="214" stroke="#1f3a30"/>
+  <text x="10" y="230" font-size="8" fill="#5d6b66">Passwort wird bei jedem Setup-Start neu</text>
+  <text x="10" y="242" font-size="8" fill="#5d6b66">erzeugt. Setup-AP endet automatisch nach</text>
+  <text x="10" y="254" font-size="8" fill="#5d6b66">15 Minuten ohne Abschluss.</text>
+
+  <g font-size="11" text-anchor="middle">
+    <rect x="2" y="288" width="236" height="30" rx="5" fill="#0d2233" stroke="#2a6f99"/>
+    <text x="120" y="307" fill="#d8e6dc">Abbrechen</text>
+  </g>
+</svg>

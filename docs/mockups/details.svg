@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="640" viewBox="0 0 240 320" font-family="DejaVu Sans Mono, Menlo, Consolas, monospace">
+  <title>HomeFlightTracker – Flugdetails (Mockup, 240×320)</title>
+  <rect width="240" height="320" fill="#050b10"/>
+
+  <rect width="240" height="22" fill="#0b1820"/>
+  <circle cx="9" cy="11" r="3.5" fill="#3ddc84"/>
+  <text x="16" y="15" font-size="9" fill="#d8e6dc">WLAN</text>
+  <circle cx="52" cy="11" r="3.5" fill="#3ddc84"/>
+  <text x="59" y="15" font-size="9" fill="#d8e6dc">OpenSky</text>
+  <text x="232" y="15" font-size="10" fill="#d8e6dc" text-anchor="end">14:32</text>
+
+  <text x="10" y="46" font-size="20" fill="#ff9a66" font-weight="bold">DLH123</text>
+  <text x="10" y="61" font-size="9" fill="#8fb3a0">ICAO24 3c6589 · Germany</text>
+  <line x1="8" y1="68" x2="232" y2="68" stroke="#1f3a30"/>
+
+  <g font-size="10">
+    <text x="10" y="85" fill="#8fb3a0">Höhe (baro)</text>      <text x="230" y="85" fill="#d8e6dc" text-anchor="end">7600 m</text>
+    <text x="10" y="102" fill="#8fb3a0">Höhe (geo)</text>       <text x="230" y="102" fill="#d8e6dc" text-anchor="end">7725 m</text>
+    <text x="10" y="119" fill="#8fb3a0">Geschwindigkeit</text>  <text x="230" y="119" fill="#d8e6dc" text-anchor="end">742 km/h</text>
+    <text x="10" y="136" fill="#8fb3a0">Kurs</text>             <text x="230" y="136" fill="#d8e6dc" text-anchor="end">245°</text>
+    <text x="10" y="153" fill="#8fb3a0">Steigrate</text>        <text x="230" y="153" fill="#d8e6dc" text-anchor="end">−6,5 m/s</text>
+    <text x="10" y="170" fill="#8fb3a0">Entfernung</text>       <text x="230" y="170" fill="#d8e6dc" text-anchor="end">18,4 km</text>
+    <text x="10" y="187" fill="#8fb3a0">Peilung</text>          <text x="230" y="187" fill="#d8e6dc" text-anchor="end">312° (NW)</text>
+    <text x="10" y="204" fill="#8fb3a0">Squawk</text>           <text x="230" y="204" fill="#d8e6dc" text-anchor="end">–</text>
+    <text x="10" y="221" fill="#8fb3a0">Quelle</text>           <text x="230" y="221" fill="#d8e6dc" text-anchor="end">ADS-B</text>
+    <text x="10" y="238" fill="#8fb3a0">Letzter Kontakt</text>  <text x="230" y="238" fill="#d8e6dc" text-anchor="end">vor 8 s</text>
+  </g>
+  <line x1="8" y1="248" x2="232" y2="248" stroke="#1f3a30"/>
+  <text x="10" y="262" font-size="8" fill="#5d6b66">Typ, Registrierung, Start/Ziel:</text>
+  <text x="10" y="273" font-size="8" fill="#5d6b66">von OpenSky nicht geliefert</text>
+
+  <g font-size="11" text-anchor="middle">
+    <rect x="2" y="288" width="116" height="30" rx="5" fill="#0d2233" stroke="#2a6f99"/>
+    <text x="60" y="307" fill="#d8e6dc">‹ Radar</text>
+    <rect x="122" y="288" width="116" height="30" rx="5" fill="#0d2233" stroke="#2a6f99"/>
+    <text x="180" y="307" fill="#d8e6dc">Liste</text>
+  </g>
+</svg>

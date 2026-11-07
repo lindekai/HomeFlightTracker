@@ -1,0 +1,19 @@
+# Betriebssystem
+.DS_Store
+Thumbs.db
+
+# Editoren
+.vscode/
+.idea/
+*.swp
+
+# Build-Ausgaben
+build/
+*.bin
+*.elf
+*.map
+
+# Zugangsdaten – niemals einchecken
+secrets.h
+**/secrets*.h
+*.env
