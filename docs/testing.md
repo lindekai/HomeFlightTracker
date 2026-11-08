@@ -68,7 +68,7 @@ Messung vom 2026-11-08 ohne aktives WLAN. **Folgerung:** Ein 16-Bit-Vollsprite f
 tests/host/run.sh
 ```
 
-Stand M3: 84 Prüfungen, 0 Fehler. Geprüft werden:
+Stand: 96 Prüfungen, 0 Fehler. Geprüft werden:
 
 - Distanz: Nullstrecke, 1° Breite, Berlin–München, Symmetrie
 - Peilung: Nord, Süd, Ost, West, Nordwest, Wertebereich
@@ -85,6 +85,7 @@ Stand M3: 84 Prüfungen, 0 Fehler. Geprüft werden:
   - `states: null` und leeres Array
   - abgebrochener Datenstrom, HTML statt JSON, defektes JSON
 - Flugliste: Kapazitätsgrenze (die nächsten bleiben), Sortierung
+- Nachtruhe: Fenster über Mitternacht und innerhalb eines Tages, Grenzen, leeres Fenster, Sekunden bis Fensterende
 
 Zusätzlich wurde eine reale OpenSky-Antwort (68 State-Vektoren) auf dem Entwicklungsrechner geparst.
 
@@ -142,6 +143,21 @@ Hinweis: Das Öffnen der seriellen Schnittstelle setzt das Gerät über den USB-
 | 4.7 | Veraltete Daten | WLAN aus: nach 3 Intervallen „Daten veraltet“ (grau), nach 15 min „Keine aktuellen Daten“ | ☐ |
 | 4.8 | Umlaute | „Menü“, „Höhe“, „Credits übrig“, „Nächster Abruf“ korrekt lesbar | ☐ |
 | 4.9 | Keine Flugzeuge | leeres Radar mit „0 Flugz.“, Liste „Keine Flugzeuge im Radius“ | ✅ nachts beobachtet (seriell) |
+
+## Energiesparen
+
+| Nr. | Prüfung | Erwartung | Ergebnis |
+|---|---|---|---|
+| E.1 | Dimmen | nach 120 s ohne Berührung gedimmt, nach 10 min aus; Abrufe laufen weiter (Menü: Abrufe steigen) | ☐ |
+| E.2 | Wecken aus „gedimmt/aus“ | erste Berührung macht nur hell, löst keine Aktion aus | ☐ |
+| E.3 | Einstellungen | Werte im Portal ändern → nach Neustart wirksam; ungültige Werte werden abgelehnt | ☐ |
+| E.4 | Nachtruhe Einschlafen | im Zeitfenster Fußzeile „Nachtruhe · Tiefschlaf in … s“, nach 2 min Display dunkel, Gerät nicht mehr im WLAN | ☐ |
+| E.5 | Wecken per Berührung | Antippen weckt; Radar erscheint ohne Startbildschirm, Daten werden abgerufen; nach 2 min wieder Tiefschlaf | ☐ |
+| E.6 | Wecken per Timer | zum Ende der Nachtruhe automatisch Normalbetrieb | ☐ |
+| E.7 | Kein Dauerwecken | Gerät bleibt im Tiefschlaf (keine wiederholten Neustarts ohne Berührung) | ☐ |
+| E.8 | Verbrauch | mit USB-Strommessgerät: Normalbetrieb hell/gedimmt/aus, Tiefschlaf | ☐ |
+
+Tipp für den Test: Nachtruhe im Portal kurzzeitig auf ein Fenster ab der aktuellen Uhrzeit setzen (z. B. 10:00–10:30).
 
 ## Spätere Testkataloge (Übersicht)
 

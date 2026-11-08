@@ -53,6 +53,7 @@ Das Portal ist in fünf Schritte gegliedert: WLAN, Standort (Suche oder Koordina
 - **Abweichungen vom Mockup:**
   - Statt Pfeiltasten heißen die Schaltflächen der Liste „Zurück“ und „Weiter“.
   - Die Ortssuche im Portal folgt in M5.
+- **Energie:** Gedimmtes oder dunkles Display wird durch die erste Berührung nur geweckt. In der Nachtruhe zeigt die Fußzeile „Nachtruhe · Tiefschlaf in … s“; das Menü zeigt das Zeitfenster.
 - **Ausrichtung:** Die Oberfläche ist für das Hochformat (Rotation 0) ausgelegt.
 
 ## Gestaltungsregeln

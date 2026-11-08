@@ -62,8 +62,15 @@ void App::begin(bool setupRequested) {
   rotation_ = hardware_settings::loadRotation();
   tft_.setRotation(rotation_);
 
-  const bool calibrate = runBootRecovery();
+  // Nach dem Tiefschlaf ohne Startbildschirm: schnell wieder anzeigen; die weckende Berührung
+  // darf weder als Recovery noch als Bedienung zählen.
+  const bool fromSleep = PowerManager::wokeFromDeepSleep();
+  const bool calibrate = !fromSleep && runBootRecovery();
   if (calibrate || !touch_.applyStoredCalibration(rotation_)) touch_.calibrate(rotation_);
+  if (fromSleep) {
+    Serial.printf("[power] aufgewacht (%s)\n", PowerManager::wokeByTouch() ? "Beruehrung" : "Timer");
+    touch_.waitForRelease();
+  }
 
   const bool configLoaded = app_config::load(config_);
   Serial.printf("[config] %s\n", !configLoaded          ? "keine Konfiguration gespeichert"
@@ -106,6 +113,8 @@ void App::loop() {
     if (mdnsStarted_) MDNS.addService("http", "tcp", 80);
     Serial.printf("[mdns] %s.local %s\n", WifiManager::kHostname, mdnsStarted_ ? "aktiv" : "FEHLER");
   }
+
+  power_.loop(tft_);  // kehrt in der Nachtruhe nach der Wachphase nicht zurück (Tiefschlaf)
 
   // Neue Daten sofort übernehmen, Zeitangaben einmal pro Sekunde aktualisieren.
   if (updateFlights()) {
@@ -192,6 +201,7 @@ void App::startNormalMode() {
   portal_.setOpenSkyService(&service_);
   portal_.begin(SetupPortal::Mode::Lan, kFirmwareVersion);
   service_.begin(config_);
+  power_.begin(config_);
   showScreen(Screen::Radar);
 }
 
@@ -328,6 +338,10 @@ void App::drawRadarFooter(const OpenSkyService::Status& status) {
   uint16_t color = ui::kColorMuted;
   if (noticeUntilMs_ != 0 && static_cast<int32_t>(millis() - noticeUntilMs_) < 0) {
     strlcpy(line, notice_, sizeof(line));
+    color = ui::kColorWarning;
+  } else if (power_.nightActive()) {
+    snprintf(line, sizeof(line), "Nachtruhe · Tiefschlaf in %lu s",
+             static_cast<unsigned long>(power_.secondsUntilSleep()));
     color = ui::kColorWarning;
   } else if (status.lastSuccess == 0) {
     strlcpy(line, status.message, sizeof(line));
@@ -527,6 +541,13 @@ void App::updateMenu() {
   put(line, ui::kColorText);
   snprintf(line, sizeof(line), "Radius %u km, alle %u s", config_.rangeKm, config_.intervalS);
   put(line, ui::kColorText);
+  if (config_.nightEnabled) {
+    snprintf(line, sizeof(line), "Nachtruhe %02u:%02u-%02u:%02u (Tiefschlaf)", config_.nightStartMin / 60,
+             config_.nightStartMin % 60, config_.nightEndMin / 60, config_.nightEndMin % 60);
+  } else {
+    snprintf(line, sizeof(line), "Nachtruhe aus");
+  }
+  put(line, ui::kColorText);
   y += 6;
 
   put("OpenSky:", ui::kColorMuted);
@@ -622,6 +643,8 @@ void App::drawConfirmSetupScreen() {
 
 void App::handleTouch(const TouchState& touch) {
   if (!touch.pressed || restartAtMs_ != 0) return;
+  // Gedimmtes oder dunkles Display: die Berührung weckt nur.
+  if (mode_ == Mode::Normal && power_.onTouch()) return;
   switch (screen_) {
     case Screen::Radar:
       handleRadarTouch(touch.x, touch.y);

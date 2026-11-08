@@ -11,6 +11,7 @@
 #include "../opensky/OpenSkyService.h"
 #include "../ui/RadarView.h"
 #include "../ui/TouchInput.h"
+#include "PowerManager.h"
 
 class App {
  public:
@@ -71,6 +72,7 @@ class App {
   SetupPortal portal_;
   OpenSkyService service_;
   RadarView radar_;
+  PowerManager power_;
 
   FlightList flights_;
   uint32_t flightsSequence_ = 0;

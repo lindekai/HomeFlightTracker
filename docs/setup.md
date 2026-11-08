@@ -71,6 +71,19 @@ arduino-cli compile -b esp32:esp32:esp32:PartitionScheme=min_spiffs HomeFlightTr
 
 Der Setup-Modus endet nach **15 Minuten** ohne Abschluss. Bei unvollständiger Konfiguration startet er dann mit einem neuen Passwort neu.
 
+### Energie
+
+| Einstellung | Standard | Wirkung |
+|---|---|---|
+| Dimmen nach | 120 s | Hintergrundbeleuchtung nach dieser Zeit ohne Berührung auf die gedimmte Helligkeit (0 = nie) |
+| Helligkeit gedimmt | 20 % | 5–100 % |
+| Display aus nach | 10 min | Beleuchtung aus (0 = nie); das Gerät ruft weiter Daten ab |
+| Nachtruhe | an, 23:00–06:00 | ESP32 im Tiefschlaf: keine Abrufe, Weboberfläche nicht erreichbar |
+
+Die erste Berührung eines gedimmten oder dunklen Displays weckt nur und löst keine Aktion aus.
+
+In der Nachtruhe weckt eine Berührung das Gerät. Es startet neu, verbindet sich, ruft im regulären Takt ab und schläft nach 2 Minuten ohne Berührung wieder ein; jedes Wecken kostet also mindestens 1 Credit. Am Ende der Nachtruhe wacht es per Timer auf. Die Nachtruhe greift erst, wenn die Uhrzeit per NTP bekannt ist.
+
 ### Spätere Änderungen
 
 - Im Heimnetz `http://<IP-Adresse>` oder `http://homeflighttracker.local` öffnen. Die IP-Adresse steht im Statusbildschirm. mDNS funktioniert nicht in jedem Netz und auf jedem Gerät; die IP-Adresse geht immer.

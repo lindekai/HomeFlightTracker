@@ -41,6 +41,8 @@ HomeFlightTracker/                    Sketch-Ordner
 └── src/
     ├── app/App.*                     Ablaufsteuerung: Start/Recovery, Setup-, Normalbetrieb     [M2]
     ├── app/BootRequest.*             Startwunsch über Software-Neustart (RTC-Speicher)         [M2]
+    ├── app/PowerManager.*            Dimmen per PWM, Display aus, Nachtruhe mit Tiefschlaf      [Energie]
+    ├── app/NightSchedule.*           Zeitfenster der Nachtruhe (host-getestet)                  [Energie]
     ├── board/BoardPins.h             feste Pinbelegung der Trägerplatine                       [M1]
     ├── config/HardwareSettings.*     Rotation + Touch-Kalibrierung im NVS                      [M1]
     ├── config/AppConfig.*            WLAN, Standort, OpenSky, Radar, Geräte-Passwort im NVS    [M2]
@@ -109,6 +111,23 @@ OpenSkyService (Task, Core 0)                      App (loop, Core 1)
 - **Speicher:** Die Antwort wird nicht als Ganzes geladen. Jeder State-Vektor wird einzeln mit ArduinoJson gelesen; der Speicherbedarf ist unabhängig von der Anzahl der Flugzeuge. Gespeichert werden höchstens die 100 nächsten Flugzeuge.
 - **Datumsgrenze:** Die Box wird in zwei Teilabfragen zerlegt. In Polnähe umfasst die Box alle Längengrade.
 
+## Energiesparen
+
+| Zustand | Auslöser | Verhalten |
+|---|---|---|
+| Voll | Berührung | Hintergrundbeleuchtung 100 % (PWM 5 kHz auf GPIO15, aktiv LOW) |
+| Gedimmt | `dimAfterS` ohne Berührung | Beleuchtung `dimPercent` |
+| Aus | `offAfterMin` ohne Berührung | Beleuchtung aus; Abrufe laufen weiter |
+| Tiefschlaf | Nachtruhe aktiv und 2 min ohne Berührung | ESP32 im Deep Sleep, Display im Sleep-Modus (ILI9341 `DISPOFF`/`SLPIN`), WLAN aus |
+
+- **Wecken aus dem Tiefschlaf:**
+  - per Timer zum Ende der Nachtruhe,
+  - per Berührung über `ext0` an GPIO27 (PENIRQ des XPT2046, aktiv LOW, RTC-Pull-up). TFT_eSPI lässt den Touchcontroller nach jeder Messung im Power-Down-Modus mit aktivem PENIRQ (Kommando `0x90`, PD-Bits 00).
+  - Ist die IRQ-Leitung beim Einschlafen bereits LOW, wird nur der Timer verwendet, damit das Gerät nicht sofort wieder aufwacht.
+- **Gehaltene Pegel im Tiefschlaf** (`gpio_hold_en` + `gpio_deep_sleep_hold_en`): Backlight HIGH (aus), Piezo LOW, TFT-CS und Touch-CS HIGH. Sie werden zu Beginn von `setup()` wieder freigegeben.
+- **Nach dem Aufwachen:** Die Firmware startet neu, ohne Startbildschirm und Recovery-Fenster. Die weckende Berührung wird verworfen.
+- **Restverbrauch im Tiefschlaf:** Spannungsregler, USB-Seriell-Wandler und Power-LED des DevKit sowie das Display ziehen weiter Strom. Der tatsächliche Wert ist noch zu messen.
+
 ## Radar-Anzeige (M4)
 
 | Datenlage | Bedingung | Darstellung |
@@ -161,4 +180,6 @@ Weitere M1-Messung: freier Heap nach Display-Init (ohne WLAN) 333 156 Byte; Rada
 | E8 | Weboberfläche über HTTP mit Digest-Anmeldung statt HTTPS | Ein selbstsigniertes Zertifikat auf dem Gerät erzeugt Browserwarnungen und kostet RAM; die Unverschlüsselung im Heimnetz ist dokumentiert |
 | E10 | Umlaute auf dem Display über eigene UTF-8-Ausgabe (Grundbuchstabe + Punkte) | Font 2 hat keine Umlaute; ein zusätzlicher Font mit Latin-1 kostet Flash und Konvertierungsaufwand |
 | E11 | Zoom ändert die Abfragereichweite erst beim nächsten regulären Abruf | Touch löst keinen Abruf aus; der Credit-Verbrauch bleibt planbar |
+| E12 | Nachtruhe als Tiefschlaf mit Touch-Wecken statt nur „Display aus“ | Gerät läuft zu Hause am Akku; der größte Gewinn liegt in den Nachtstunden ohne Nutzen |
+| E13 | Wecken in der Nachtruhe startet den regulären Abruftakt | Nach dem Wecken sollen aktuelle Daten erscheinen; der Verbrauch ist auf 1 Credit je Intervall während der 2-minütigen Wachphase begrenzt |
 | E9 | Werksreset nur lokal (8 s Halten beim Start) | kein Reset über das Netz möglich, auch nicht bei verlorenem Passwort |

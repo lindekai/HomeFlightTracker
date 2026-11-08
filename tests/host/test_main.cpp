@@ -5,6 +5,7 @@
 
 #include <string.h>
 
+#include "../../HomeFlightTracker/src/app/NightSchedule.h"
 #include "../../HomeFlightTracker/src/geo/Geo.h"
 #include "../../HomeFlightTracker/src/model/FlightList.h"
 #include "../../HomeFlightTracker/src/opensky/Quota.h"
@@ -216,6 +217,24 @@ void testFlightList() {
   CHECK(sorted);
 }
 
+void testNightSchedule() {
+  using night_schedule::isInWindow;
+  using night_schedule::secondsUntil;
+  const uint16_t start = 23 * 60, end = 6 * 60;  // über Mitternacht
+  CHECK(isInWindow(23 * 3600, start, end));
+  CHECK(isInWindow(2 * 3600, start, end));
+  CHECK(!isInWindow(6 * 3600, start, end));        // Ende exklusiv
+  CHECK(isInWindow(6 * 3600 - 1, start, end));
+  CHECK(!isInWindow(12 * 3600, start, end));
+  CHECK(!isInWindow(23 * 3600 - 1, start, end));
+  CHECK(isInWindow(13 * 3600, 12 * 60, 14 * 60));  // innerhalb eines Tages
+  CHECK(!isInWindow(15 * 3600, 12 * 60, 14 * 60));
+  CHECK(!isInWindow(13 * 3600, 600, 600));         // leeres Fenster
+  CHECK(secondsUntil(23 * 3600, end) == 7 * 3600);
+  CHECK(secondsUntil(5 * 3600 + 59 * 60 + 30, end) == 30);
+  CHECK(secondsUntil(6 * 3600, end) == 86400);
+}
+
 }  // namespace
 
 int main() {
@@ -226,6 +245,7 @@ int main() {
   testQuota();
   testParser();
   testFlightList();
+  testNightSchedule();
   printf("%d Prüfungen, %d Fehler\n", checks, failures);
   return failures == 0 ? 0 : 1;
 }

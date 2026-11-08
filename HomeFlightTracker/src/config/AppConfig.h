@@ -22,6 +22,14 @@ struct AppConfig {
 
   char webPassword[64] = "";
 
+  // Energie
+  uint16_t dimAfterS = 120;      // Display dimmen nach Inaktivität, 0 = nie
+  uint8_t dimPercent = 20;       // Helligkeit im gedimmten Zustand
+  uint8_t offAfterMin = 10;      // Display aus nach Inaktivität, 0 = nie
+  bool nightEnabled = true;      // Nachtruhe mit Tiefschlaf
+  uint16_t nightStartMin = 23 * 60;  // Minuten nach Mitternacht (Ortszeit)
+  uint16_t nightEndMin = 6 * 60;
+
   bool hasOpenskyCredentials() const { return openskyClientId[0] != '\0' && openskyClientSecret[0] != '\0'; }
   // Mindestangaben für den Normalbetrieb.
   bool isComplete() const { return wifiSsid[0] != '\0' && hasLocation && webPassword[0] != '\0'; }

@@ -111,6 +111,14 @@ void SetupPortal::handleState() {
   for (uint16_t km : app_config::kAllowedRangesKm) ranges.add(km);
   doc["hasWebPassword"] = config_.webPassword[0] != '\0';
 
+  JsonObject power = doc["power"].to<JsonObject>();
+  power["dimAfterS"] = config_.dimAfterS;
+  power["dimPercent"] = config_.dimPercent;
+  power["offAfterMin"] = config_.offAfterMin;
+  power["nightEnabled"] = config_.nightEnabled;
+  power["nightStartMin"] = config_.nightStartMin;
+  power["nightEndMin"] = config_.nightEndMin;
+
   String body;
   serializeJson(doc, body);
   sendJson(200, body);
@@ -281,6 +289,16 @@ void SetupPortal::handleConfig() {
     return;
   }
   if (webPassword[0] != '\0') strlcpy(updated.webPassword, webPassword, sizeof(updated.webPassword));
+
+  if (request["power"].is<JsonObjectConst>()) {
+    JsonObjectConst power = request["power"];
+    updated.dimAfterS = power["dimAfterS"] | updated.dimAfterS;
+    updated.dimPercent = power["dimPercent"] | updated.dimPercent;
+    updated.offAfterMin = power["offAfterMin"] | updated.offAfterMin;
+    updated.nightEnabled = power["nightEnabled"] | updated.nightEnabled;
+    updated.nightStartMin = power["nightStartMin"] | updated.nightStartMin;
+    updated.nightEndMin = power["nightEndMin"] | updated.nightEndMin;
+  }
 
   const char* error = app_config::validate(updated);
   if (error != nullptr) {

@@ -30,6 +30,7 @@ Eigenständiges Tisch- und Wandgerät, das Flugbewegungen rund um einen frei wä
   - Alter und Stand der Daten sind immer sichtbar.
   - Veraltete Positionen werden gekennzeichnet.
   - Es gibt keine erfundenen Angaben zu Flugzeugtyp, Registrierung, Start oder Ziel.
+- **Stromsparend:** Display dimmt und schaltet sich ab, nachts Tiefschlaf mit Wecken per Berührung.
 - **Kontingentschonend:** Ein Abruf kostet 1 OpenSky-Credit. Mit dem Standardintervall von 60 s sind das ca. 1 440 der 4 000 Tages-Credits.
 
 ## Hardware
@@ -104,6 +105,7 @@ Die geplante Struktur der späteren Module steht in [docs/architecture.md](docs/
 | M2 | Konfiguration und WLAN-Provisioning (Setup-AP, Captive Portal, Web-UI, Werksreset) | ✅ abgenommen |
 | M3 | OpenSky-Client (NTP, TLS, OAuth2, Bounding Box, JSON, Kontingent, Backoff) | 🧪 umgesetzt, Test auf Hardware läuft |
 | M4 | Radar-Oberfläche (Symbole, Details, Liste, Reichweite, Status) | 🧪 umgesetzt, Test mit Flugverkehr ausstehend |
+| Energie | Dimmen, Display aus, Nachtruhe mit Tiefschlaf | 🧪 umgesetzt, noch nicht auf dem Gerät getestet |
 | M5 | Robustheit (Geocoding, mDNS, Watchdog, Langzeittest, Review, Release) | geplant |
 
 Bewusst **nicht** Teil des MVP sind: ADS-B-Empfänger, Abflug- und Ankunftstafeln, Routen- oder Zielermittlung, Cloud-Konto, Kartenkacheln, Push-Benachrichtigungen und Audio.

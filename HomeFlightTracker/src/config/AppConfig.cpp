@@ -24,6 +24,12 @@ constexpr char kKeyClientSecret[] = "os_secret";
 constexpr char kKeyRange[] = "range_km";
 constexpr char kKeyInterval[] = "interval_s";
 constexpr char kKeyWebPassword[] = "web_pass";
+constexpr char kKeyDimAfter[] = "dim_after";
+constexpr char kKeyDimPercent[] = "dim_pct";
+constexpr char kKeyOffAfter[] = "off_after";
+constexpr char kKeyNightEnabled[] = "night_on";
+constexpr char kKeyNightStart[] = "night_start";
+constexpr char kKeyNightEnd[] = "night_end";
 
 void readString(Preferences& prefs, const char* key, char* target, size_t size) {
   target[0] = '\0';
@@ -59,6 +65,13 @@ bool app_config::load(AppConfig& out) {
   config.rangeKm = prefs.getUShort(kKeyRange, config.rangeKm);
   config.intervalS = prefs.getUShort(kKeyInterval, config.intervalS);
   readString(prefs, kKeyWebPassword, config.webPassword, sizeof(config.webPassword));
+  // Energie-Einstellungen kamen nach Schema 1 hinzu; fehlende Schlüssel liefern die Standardwerte.
+  config.dimAfterS = prefs.getUShort(kKeyDimAfter, config.dimAfterS);
+  config.dimPercent = prefs.getUChar(kKeyDimPercent, config.dimPercent);
+  config.offAfterMin = prefs.getUChar(kKeyOffAfter, config.offAfterMin);
+  config.nightEnabled = prefs.getBool(kKeyNightEnabled, config.nightEnabled);
+  config.nightStartMin = prefs.getUShort(kKeyNightStart, config.nightStartMin);
+  config.nightEndMin = prefs.getUShort(kKeyNightEnd, config.nightEndMin);
   prefs.end();
 
   out = config;
@@ -81,6 +94,12 @@ bool app_config::save(const AppConfig& config) {
   ok &= prefs.putUShort(kKeyRange, config.rangeKm) > 0;
   ok &= prefs.putUShort(kKeyInterval, config.intervalS) > 0;
   ok &= prefs.putString(kKeyWebPassword, config.webPassword) == strlen(config.webPassword);
+  ok &= prefs.putUShort(kKeyDimAfter, config.dimAfterS) > 0;
+  ok &= prefs.putUChar(kKeyDimPercent, config.dimPercent) > 0;
+  ok &= prefs.putUChar(kKeyOffAfter, config.offAfterMin) > 0;
+  ok &= prefs.putBool(kKeyNightEnabled, config.nightEnabled) > 0;
+  ok &= prefs.putUShort(kKeyNightStart, config.nightStartMin) > 0;
+  ok &= prefs.putUShort(kKeyNightEnd, config.nightEndMin) > 0;
   // Version zuletzt schreiben: ein unterbrochener Speichervorgang bleibt als „nicht konfiguriert“ erkennbar.
   ok &= prefs.putUChar(kKeyVersion, kSchemaVersion) > 0;
   prefs.end();
@@ -103,6 +122,11 @@ const char* app_config::validate(const AppConfig& config) {
                          : "Ohne OpenSky-Zugang ist ein Intervall von mindestens 300 s nötig";
   }
   if (strlen(config.webPassword) < kMinWebPasswordLength) return "Geräte-Passwort muss mindestens 8 Zeichen haben";
+  if (config.dimAfterS > 3600) return "Dimmen: höchstens 3600 s";
+  if (config.dimPercent < 5 || config.dimPercent > 100) return "Helligkeit gedimmt: 5 bis 100 %";
+  if (config.offAfterMin > 240) return "Display aus: höchstens 240 min";
+  if (config.nightStartMin >= 24 * 60 || config.nightEndMin >= 24 * 60) return "Nachtruhe: ungültige Uhrzeit";
+  if (config.nightEnabled && config.nightStartMin == config.nightEndMin) return "Nachtruhe: Beginn und Ende gleich";
   return nullptr;
 }
 

@@ -5,6 +5,7 @@
 
 #include "src/app/App.h"
 #include "src/app/BootRequest.h"
+#include "src/app/PowerManager.h"
 #include "src/board/BoardPins.h"
 #include "src/hwtest/HardwareTestApp.h"
 
@@ -27,6 +28,8 @@ HardwareTestApp diagnostics(tft);
 bool diagnosticsMode = false;
 
 void setup() {
+  PowerManager::releaseSleepHolds();  // nach dem Tiefschlaf gehaltene Pin-Pegel freigeben
+
   // Piezo-Treiber hat keinen Pull-down: Pin sofort definiert auf LOW halten (stumm).
   pinMode(board::kPinBeeper, OUTPUT);
   digitalWrite(board::kPinBeeper, LOW);

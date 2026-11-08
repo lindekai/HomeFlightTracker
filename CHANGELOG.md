@@ -8,6 +8,15 @@ Format angelehnt an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 - MIT-Lizenz hinzugefügt.
 
+### Energiesparen (Firmware 0.5.0)
+
+#### Hinzugefügt
+
+- Hintergrundbeleuchtung per PWM: dimmen und abschalten nach einstellbarer Inaktivität; die erste Berührung weckt nur.
+- Nachtruhe (Standard 23:00–06:00) mit Tiefschlaf; Wecken per Berührung (Touch-IRQ) oder Timer, danach 2 Minuten Wachphase.
+- Energie-Einstellungen in der Weboberfläche, Anzeige der Nachtruhe im Menü und in der Fußzeile.
+- Host-Tests für das Nachtruhe-Zeitfenster (insgesamt 96 Prüfungen).
+
 ### M4 – Radar-Oberfläche
 
 #### Geändert (nach erstem Test am Gerät)

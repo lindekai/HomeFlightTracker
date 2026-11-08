@@ -61,7 +61,17 @@ button:disabled{opacity:.5}
 <div class="box" id="quota">–</div>
 </section>
 
-<section><h2>5 · Geräte-Passwort</h2>
+<section><h2>5 · Energie</h2>
+<div class="row"><div><label for="dimafter">Dimmen nach (s, 0 = nie)</label><input id="dimafter" type="number" min="0" max="3600"></div>
+<div><label for="dimpct">Helligkeit gedimmt (%)</label><input id="dimpct" type="number" min="5" max="100"></div></div>
+<label for="offafter">Display aus nach (min, 0 = nie)</label><input id="offafter" type="number" min="0" max="240">
+<label style="display:flex;gap:8px;align-items:center;color:var(--text);margin-top:12px"><input id="nighton" type="checkbox" style="width:auto"> Nachtruhe mit Tiefschlaf</label>
+<div class="row"><div><label for="nightstart">von</label><input id="nightstart" type="time"></div>
+<div><label for="nightend">bis</label><input id="nightend" type="time"></div></div>
+<div class="hint">In der Nachtruhe schläft das Gerät (keine Abrufe, Weboberfläche nicht erreichbar). Berührung weckt für 2 Minuten.</div>
+</section>
+
+<section><h2>6 · Geräte-Passwort</h2>
 <label for="web">Passwort für diese Weboberfläche im Heimnetz (Benutzer: admin)</label>
 <input id="web" type="password" maxlength="63" autocomplete="new-password">
 <div class="hint" id="webhint">Mindestens 8 Zeichen.</div>
@@ -75,6 +85,8 @@ button:disabled{opacity:.5}
 const $=id=>document.getElementById(id);let st={},range=50;
 const H={'Content-Type':'application/json','X-HFT':'1'};
 async function api(path,body){const r=await fetch(path,body===undefined?{}:{method:'POST',headers:H,body:JSON.stringify(body)});const j=await r.json().catch(()=>({}));if(!r.ok&&!j.error)j.error='HTTP '+r.status;return j}
+const hm=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+const mins=t=>{const a=(t||'').split(':');return a.length===2?(+a[0])*60+(+a[1]):null};
 function setRange(km){range=km;[...$('ranges').children].forEach(b=>b.classList.toggle('on',+b.dataset.km===km));estimate()}
 async function load(){
  st=await api('/api/state');
@@ -91,6 +103,8 @@ async function load(){
  $('web').placeholder=st.hasWebPassword?'gespeichert – leer lassen = unverändert':'erforderlich';
  $('ranges').innerHTML='';st.ranges.forEach(km=>{const b=document.createElement('button');b.type='button';b.textContent=km+' km';b.dataset.km=km;b.onclick=()=>setRange(km);$('ranges').appendChild(b)});
  $('intv').value=st.intervalS;setRange(st.rangeKm);
+ const p=st.power;$('dimafter').value=p.dimAfterS;$('dimpct').value=p.dimPercent;$('offafter').value=p.offAfterMin;
+ $('nighton').checked=p.nightEnabled;$('nightstart').value=hm(p.nightStartMin);$('nightend').value=hm(p.nightEndMin);
 }
 function authenticated(){if($('cclear').checked)return false;return !!($('cid').value.trim()&&($('csec').value||st.opensky.hasSecret))}
 let et;function estimate(){clearTimeout(et);et=setTimeout(async()=>{
@@ -118,7 +132,9 @@ $('otest').onclick=async()=>{$('otestmsg').className='hint';$('otestmsg').textCo
 $('save').onclick=async()=>{const lat=parseFloat($('lat').value),lon=parseFloat($('lon').value);
  const body={wifiSsid:$('ssid').value.trim(),wifiPassword:$('wpass').value,wifiOpen:$('wopen').checked,lat:isNaN(lat)?null:lat,lon:isNaN(lon)?null:lon,
   locationName:$('lname').value.trim(),clientId:$('cid').value.trim(),clientSecret:$('csec').value,clearOpensky:$('cclear').checked,
-  rangeKm:range,intervalS:parseInt($('intv').value,10)||0,webPassword:$('web').value};
+  rangeKm:range,intervalS:parseInt($('intv').value,10)||0,webPassword:$('web').value,
+  power:{dimAfterS:parseInt($('dimafter').value,10)||0,dimPercent:parseInt($('dimpct').value,10)||0,offAfterMin:parseInt($('offafter').value,10)||0,
+   nightEnabled:$('nighton').checked,nightStartMin:mins($('nightstart').value)??1380,nightEndMin:mins($('nightend').value)??360}};
  $('save').disabled=true;const r=await api('/api/config',body);
  if(r.ok){$('savemsg').className='hint ok';$('savemsg').textContent='Gespeichert. Das Gerät startet neu.'+(st.mode==='setup'?' Das Smartphone wieder mit dem Heimnetz verbinden.':'')}
  else{$('save').disabled=false;$('savemsg').className='hint err';$('savemsg').textContent=r.error||'Speichern fehlgeschlagen'}};
