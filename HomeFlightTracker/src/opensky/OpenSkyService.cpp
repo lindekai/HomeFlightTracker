@@ -203,6 +203,10 @@ void OpenSkyService::scheduleAfterFailure(OpenSkyClient::Result result, uint32_t
   nextFetchMs_ = startedMs + delayMs;
   authRetried_ = false;
   setState(state, message);
+  {
+    Lock lock(mutex_);
+    status_.failures++;
+  }
   Serial.printf("[opensky] %s - naechster Versuch in %lu s\n", message, static_cast<unsigned long>(delayMs / 1000));
 }
 

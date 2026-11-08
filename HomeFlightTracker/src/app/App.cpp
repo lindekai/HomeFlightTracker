@@ -538,8 +538,14 @@ void App::updateMenu() {
   put(line, ui::kColorText);
   snprintf(line, sizeof(line), "Nächster Abruf in %lu s", static_cast<unsigned long>(status.nextFetchInS));
   put(line, ui::kColorText);
-  snprintf(line, sizeof(line), "Firmware %s · Heap %lu KB", kFirmwareVersion,
-           static_cast<unsigned long>(ESP.getFreeHeap() / 1024));
+  const uint32_t minutes = millis() / 60000;
+  snprintf(line, sizeof(line), "Laufzeit %lu:%02lu h, Abrufe %lu, Fehler %lu", static_cast<unsigned long>(minutes / 60),
+           static_cast<unsigned long>(minutes % 60), static_cast<unsigned long>(status.sequence),
+           static_cast<unsigned long>(status.failures));
+  put(line, ui::kColorMuted);
+  snprintf(line, sizeof(line), "FW %s · Heap %lu KB (min %lu KB)", kFirmwareVersion,
+           static_cast<unsigned long>(ESP.getFreeHeap() / 1024),
+           static_cast<unsigned long>(ESP.getMinFreeHeap() / 1024));
   put(line, ui::kColorMuted);
 }
 

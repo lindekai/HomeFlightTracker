@@ -124,8 +124,10 @@ Zusätzlich wurde eine reale OpenSky-Antwort (68 State-Vektoren) auf dem Entwick
 | 3.6 | Falsches Secret | „Zugang testen“ meldet „Anmeldung abgelehnt“; im Betrieb Auth-Fehlerstatus ohne Endlosschleife | ☐ |
 | 3.7 | Token-Erneuerung | nach > 25 min neuer Token ohne Unterbrechung | ☐ |
 | 3.8 | Netzwerkausfall | Router aus: Status „warte auf WLAN“ bzw. Fehler mit Backoff; danach automatische Fortsetzung | ☐ |
-| 3.9 | Heap-Stabilität | ≥ 100 Abrufe ohne fallenden Trend des freien Heaps | ☐ (erste 5 Abrufe stabil bei ca. 104 KB) |
+| 3.9 | Heap-Stabilität | ≥ 100 Abrufe ohne fallenden Trend des freien Heaps; ablesbar im Menü (Laufzeit, Abrufe, Fehler, Heap/min) | ☐ (erste Abrufe stabil bei ca. 104 KB) |
 | 3.10 | Kein Abruf durch Touch | beliebige Bedienung ändert den Abruftakt nicht | ☐ |
+
+Hinweis: Das Öffnen der seriellen Schnittstelle setzt das Gerät über den USB-Seriell-Adapter zurück (`POWERON_RESET`). Langläufe deshalb über das Menü ablesen, nicht per seriellem Monitor.
 
 ## M4 – Radar-Oberfläche
 

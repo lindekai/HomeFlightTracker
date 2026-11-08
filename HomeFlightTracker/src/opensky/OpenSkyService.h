@@ -29,6 +29,7 @@ class OpenSkyService {
     char message[40] = "";
     bool authenticated = false;  // mit OpenSky-Zugang (sonst anonym)
     uint32_t sequence = 0;       // steigt mit jedem erfolgreichen Abruf
+    uint32_t failures = 0;       // fehlgeschlagene Abrufe seit Start
     time_t lastSuccess = 0;      // Unix-Zeit des letzten erfolgreichen Abrufs
     int64_t apiTime = 0;         // Zeitstempel der Daten laut OpenSky
     uint16_t aircraftInRange = 0;
