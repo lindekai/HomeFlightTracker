@@ -14,7 +14,7 @@ Eigenständiges Tisch- und Wandgerät, das Flugbewegungen rund um einen frei wä
 </p>
 <p align="center"><sub>Mockups der geplanten Oberfläche (240 × 320 px, Beispieldaten). Weitere Entwürfe: <a href="docs/ui.md">docs/ui.md</a></sub></p>
 
-> **Projektstatus:** in Entwicklung. M1 und M2 sind abgenommen; OpenSky-Abruf (M3) und Radar-Oberfläche (M4) sind umgesetzt und im Test, siehe [Roadmap](#roadmap).
+> **Projektstatus:** in Entwicklung, Firmware 0.8.0. M1 und M2 sind abgenommen; OpenSky-Abruf (M3), Radar-Oberfläche (M4), Energiesparen und die Erweiterungen (Luftfahrt-Einheiten, Symbole nach Kategorie, Profile) laufen auf dem Gerät und sind im Test, siehe [Roadmap](#roadmap).
 
 ## Bedienung
 
@@ -109,9 +109,10 @@ Die geplante Struktur der späteren Module steht in [docs/architecture.md](docs/
 | M0 | Projektgerüst, Dokumentation, Pin-Matrix | ✅ erledigt |
 | M1 | Hardware-Machbarkeit: Display, Rotation, Backlight, Touch-Kalibrierung, Heap-Basiswerte | ✅ abgenommen |
 | M2 | Konfiguration und WLAN-Provisioning (Setup-AP, Captive Portal, Web-UI, Werksreset) | ✅ abgenommen |
-| M3 | OpenSky-Client (NTP, TLS, OAuth2, Bounding Box, JSON, Kontingent, Backoff) | 🧪 umgesetzt, Test auf Hardware läuft |
-| M4 | Radar-Oberfläche (Symbole, Details, Liste, Reichweite, Status) | 🧪 umgesetzt, Test mit Flugverkehr ausstehend |
-| Energie | Dimmen, Display aus, Nachtruhe mit Tiefschlaf | 🧪 umgesetzt, noch nicht auf dem Gerät getestet |
+| M3 | OpenSky-Client (NTP, TLS, OAuth2, Bounding Box, JSON, Kontingent, Backoff) | 🧪 läuft auf dem Gerät (Token, Abrufe, Credits geprüft), Abnahme ausstehend |
+| M4 | Radar-Oberfläche (Symbole, Details, Liste, Reichweite, Status) | 🧪 mit echtem Flugverkehr im Test, Abnahme ausstehend |
+| Energie | Dimmen, Display aus, Nachtruhe mit Tiefschlaf | 🧪 auf dem Gerät, Test läuft |
+| Erweiterungen | Höhe in Fuß und Luftfahrt-Einheiten (0.6.0), Reichweite 10–250 km (0.6.0), Symbole für Hubschrauber und Kleinflugzeuge (0.7.0), Profile aus WLAN + Standort (0.8.0) | 🧪 auf dem Gerät, Test läuft |
 | M5 | Robustheit (Geocoding, mDNS, Watchdog, Langzeittest, Review, Release) | geplant |
 
 Bewusst **nicht** Teil des MVP sind: ADS-B-Empfänger, Abflug- und Ankunftstafeln, Routen- oder Zielermittlung, Cloud-Konto, Kartenkacheln, Push-Benachrichtigungen und Audio.
