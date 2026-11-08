@@ -68,13 +68,14 @@ Messung vom 2026-11-08 ohne aktives WLAN. **Folgerung:** Ein 16-Bit-Vollsprite f
 tests/host/run.sh
 ```
 
-Stand: 96 Prüfungen, 0 Fehler. Geprüft werden:
+Stand: 109 Prüfungen, 0 Fehler. Geprüft werden:
 
 - Distanz: Nullstrecke, 1° Breite, Berlin–München, Symmetrie
 - Peilung: Nord, Süd, Ost, West, Nordwest, Wertebereich
 - Bounding Box: 100 km bei 52,3° N, Punkte auf dem Kreis, Datumsgrenze, Polnähe, hohe Breiten
 - Gültigkeit von Koordinaten, Normalisierung des Längengrads
-- Credits je Flächenstufe, Tagesverbrauch, kürzestes zulässiges Intervall (authentifiziert und anonym)
+- Credits je Flächenstufe, Tagesverbrauch, kürzestes zulässiges Intervall (authentifiziert und anonym), Reichweiten 10 und 250 km
+- Einheiten: Fuß, Knoten, ft/min, Seemeilen, Flugfläche (inklusive fehlender und negativer Höhe)
 - Parser:
   - vollständiger Datensatz
   - Null-Felder
@@ -138,11 +139,13 @@ Hinweis: Das Öffnen der seriellen Schnittstelle setzt das Gerät über den USB-
 | 4.2 | Geometrie | Flugzeug nördlich erscheint oben, östlich rechts; Entfernung in Kurzinfo = Position im Ringraster | ☐ |
 | 4.3 | Auswahl | ohne Auswahl Kurzinfo am nächstgelegenen Flugzeug; Antippen wählt (orange), Kurzinfo öffnet Details; bei überlappenden Symbolen schaltet erneutes Antippen durch; leere Stelle hebt Auswahl auf | ☐ |
 | 4.4 | Details | Einheiten m, km/h, °, m/s, km; fehlende Werte „-“; Hinweis zu Typ/Start/Ziel; „Letzter Kontakt“ zählt hoch | ☐ |
+| 4.4a | Details Seite 2 | „Fuß“ zeigt ft, FL, kt, ft/min, NM; Werte stimmen mit Seite 1 überein (z. B. 10 668 m = 35 000 ft = FL350); „Meter“ schaltet zurück; Seite bleibt beim nächsten Flugzeug erhalten | ☐ |
 | 4.5 | Liste | sortiert nach Entfernung, Blättern, Zeile öffnet Details | ☐ |
-| 4.6 | Zoom | + / − wechselt 25/50/100 km, bleibt nach Neustart erhalten, löst keinen Abruf aus | ☐ |
+| 4.6 | Zoom | + / − wechselt 10/25/50/100/250 km (Halbring „5“, „12,5“, „25“, „50“, „125“), bleibt nach Neustart erhalten, löst keinen Abruf aus | ☐ |
 | 4.7 | Veraltete Daten | WLAN aus: nach 3 Intervallen „Daten veraltet“ (grau), nach 15 min „Keine aktuellen Daten“ | ☐ |
 | 4.8 | Umlaute | „Menü“, „Höhe“, „Credits übrig“, „Nächster Abruf“ korrekt lesbar | ☐ |
 | 4.9 | Keine Flugzeuge | leeres Radar mit „0 Flugz.“, Liste „Keine Flugzeuge im Radius“ | ✅ nachts beobachtet (seriell) |
+| 4.10 | 250 km | Abruf mit 2 Credits (Menü: Credits übrig sinkt um 2), Dauer und Heap (min) im Menü unauffällig | ☐ |
 
 ## Energiesparen
 

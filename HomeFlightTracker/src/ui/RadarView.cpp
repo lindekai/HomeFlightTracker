@@ -97,7 +97,7 @@ void RadarView::drawBackground(TFT_eSPI& canvas, int16_t oy, const Info& info, u
   // Ringbeschriftung (halber und voller Radius) und Himmelsrichtungen
   char text[16];
   canvas.setTextColor(ui::kColorRingLabel, ui::kColorBackground);
-  snprintf(text, sizeof(text), "%u", info.rangeKm / 2);
+  ui::formatDecimal(text, sizeof(text), info.rangeKm / 2.0, info.rangeKm % 2 == 0 ? 0 : 1);
   ui::drawText(canvas, text, kCenter + 3, oy + kCenter - kRadius / 2 - 15);
   canvas.setTextColor(ui::kColorAccent, ui::kColorBackground);
   ui::drawText(canvas, "N", kCenter - 4, oy);

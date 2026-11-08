@@ -15,11 +15,23 @@ Die Mockups zeigen den geplanten Zielzustand (M2/M4) im Maßstab 1:1 zur Display
 - **Auswahl:** Antippen markiert ein Flugzeug (orange) und blendet eine Kurzinfo ein. Ein zweites Antippen öffnet die Details. Liegen Symbole übereinander, wird das nächstgelegene im Trefferradius gewählt; erneutes Antippen wechselt zum nächsten Kandidaten.
 - **Veraltete Positionen** werden grau und ohne Bewegung dargestellt und nach einer festgelegten Zeit ausgeblendet.
 - **Aktualität:** „Stand hh:mm:ss · vor n s“ ist immer sichtbar.
-- **Bedienleiste:** Reichweite − / +, Liste, Menü. Jede Schaltfläche ist mindestens 56 × 30 px groß.
+- **Bedienleiste:** Reichweite − / + (10, 25, 50, 100, 250 km), Liste, Menü. Jede Schaltfläche ist mindestens 56 × 30 px groß.
 
 ### Details
 
-Es werden nur Werte aus dem OpenSky-State-Vektor angezeigt, mit eindeutigen Einheiten (m, km/h, °, m/s, km). Fehlende Werte erscheinen als „–“. Ein fester Hinweis stellt klar, dass Typ, Registrierung und Start/Ziel nicht geliefert werden.
+Es werden nur Werte aus dem OpenSky-State-Vektor angezeigt, mit eindeutigen Einheiten. Fehlende Werte erscheinen als „–“. Ein fester Hinweis stellt klar, dass Typ, Registrierung und Start/Ziel nicht geliefert werden.
+
+Die Details haben zwei Seiten, umgeschaltet mit der dritten Schaltfläche („Fuß“ bzw. „Meter“); oben rechts steht, welche Einheiten gerade gelten. Die gewählte Seite bleibt bis zum Neustart für alle Flugzeuge erhalten.
+
+| Wert | Seite 1 (metrisch) | Seite 2 (Luftfahrt) |
+|---|---|---|
+| Höhe (baro), Höhe (geo) | m | ft |
+| Flugfläche | – | FL aus der barometrischen Höhe (Hunderte Fuß, Standarddruck 1013,25 hPa) |
+| Geschwindigkeit | km/h | kt |
+| Steigrate | m/s | ft/min |
+| Entfernung | km | NM |
+| Kurs, Peilung, Squawk, Letzter Kontakt | gleich | gleich |
+| Quelle (ADS-B, MLAT …) | ja | – |
 
 ### Liste
 

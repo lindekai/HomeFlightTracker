@@ -80,6 +80,7 @@ class App {
   char labelIcao24_[7] = "";  // Flugzeug mit Kurzinfo im zuletzt gezeichneten Radar
   Aircraft detail_{};
   bool detailInData_ = false;
+  bool detailAviationUnits_ = false;  // Detailseite 2: ft, FL, kt, ft/min, NM
   uint8_t listPage_ = 0;
   RadarView::DataState lastDataState_ = RadarView::DataState::Waiting;
   char notice_[48] = "";

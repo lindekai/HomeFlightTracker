@@ -8,6 +8,18 @@ Format angelehnt an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 - MIT-Lizenz hinzugefügt.
 
+### Luftfahrt-Einheiten und Reichweite (Firmware 0.6.0)
+
+#### Hinzugefügt
+
+- Zweite Detailseite mit Höhe in Fuß, Flugfläche, Geschwindigkeit in Knoten, Steigrate in ft/min und Entfernung in Seemeilen; Umschalten mit „Fuß“ / „Meter“.
+- Reichweiten 10 km und 250 km (jetzt 10/25/50/100/250 km). 250 km kosten 2 Credits pro Abruf.
+- Host-Tests für die Einheitenumrechnung und das Kontingent bei 10/250 km (insgesamt 109 Prüfungen).
+
+#### Geändert
+
+- Die Halbring-Beschriftung zeigt bei 25 km „12,5“ statt „12“.
+
 ### Energiesparen (Firmware 0.5.0)
 
 #### Hinzugefügt

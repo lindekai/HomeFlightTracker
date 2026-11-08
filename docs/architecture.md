@@ -57,6 +57,7 @@ HomeFlightTracker/                    Sketch-Ordner
     ├── ui/Widgets.*                  Statusleiste, Schaltflächen, UTF-8-Text mit Umlauten       [M2/M4]
     ├── net/TimeSync.*                NTP, Zeitzone Europa/Berlin                                [M3]
     ├── model/FlightList.*            Flugzeugtabelle fester Größe (max. 100, nächste zuerst)    [M3]
+    ├── model/Units.h                 Umrechnung in Luftfahrt-Einheiten (ft, kt, ft/min, NM, FL)
     ├── opensky/StatesParser.*        Streaming-Parser für /states/all (host-getestet)           [M3]
     ├── opensky/OpenSkyClient.*       TLS mit CA-Bundle, OAuth2-Token, /states/all, Rate-Limit   [M3]
     ├── opensky/OpenSkyService.*      Task auf Core 0: Takt, Token-Erneuerung, Backoff, Snapshot [M3]

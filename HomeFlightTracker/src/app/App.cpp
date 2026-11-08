@@ -6,6 +6,7 @@
 
 #include "../config/HardwareSettings.h"
 #include "../diag/HeapReport.h"
+#include "../model/Units.h"
 #include "../net/TimeSync.h"
 #include "../opensky/Quota.h"
 #include "../ui/Widgets.h"
@@ -15,7 +16,8 @@
 namespace {
 
 const char* const kRadarButtons[] = {"-", "Liste", "Menü", "+"};
-const char* const kDetailButtons[] = {"< Radar", "Liste"};
+const char* const kDetailButtons[] = {"< Radar", "Liste", "Fuß"};
+const char* const kDetailButtonsAviation[] = {"< Radar", "Liste", "Meter"};
 const char* const kListButtons[] = {"< Radar", "Zurück", "Weiter"};
 const char* const kMenuButtons[] = {"Radar", "Setup", "Kalibr.", "Diag."};
 const char* const kConfirmButtons[] = {"Ja", "Nein"};
@@ -51,6 +53,14 @@ void formatAltitude(char* buffer, size_t size, float meters) {
     snprintf(buffer, size, "-");
   } else {
     snprintf(buffer, size, "%.0f m", meters);
+  }
+}
+
+void formatAltitudeFeet(char* buffer, size_t size, float meters) {
+  if (isnan(meters)) {
+    snprintf(buffer, size, "-");
+  } else {
+    snprintf(buffer, size, "%.0f ft", units::metersToFeet(meters));
   }
 }
 
@@ -369,6 +379,8 @@ void App::drawDetails() {
   tft_.setTextDatum(TL_DATUM);
   tft_.setTextColor(ui::kColorSelectedText, ui::kColorBackground);
   tft_.drawString(a.callsign[0] ? a.callsign : "ohne Callsign", ui::kMargin, 28, 4);
+  tft_.setTextColor(ui::kColorMuted, ui::kColorBackground);
+  ui::drawText(tft_, detailAviationUnits_ ? "ft · kt · NM" : "m · km/h · km", tft_.width() - ui::kMargin, 34, 2, true);
   char line[64];
   snprintf(line, sizeof(line), "ICAO24 %s · %s", a.icao24, a.originCountry);
   ui::drawLine(tft_, 56, line, ui::kColorMuted);
@@ -386,37 +398,76 @@ void App::drawDetails() {
     strlcpy(rows[n].text, text, sizeof(rows[n].text));
     ++n;
   };
-  formatAltitude(value, sizeof(value), a.baroAltitudeM);
-  add("Höhe (baro)", value);
-  formatAltitude(value, sizeof(value), a.geoAltitudeM);
-  add("Höhe (geo)", value);
-  if (isnan(a.velocityMs)) {
-    snprintf(value, sizeof(value), "-");
+  if (detailAviationUnits_) {
+    formatAltitudeFeet(value, sizeof(value), a.baroAltitudeM);
+    add("Höhe (baro)", value);
+    const long level = units::flightLevel(a.baroAltitudeM);
+    if (level < 0) {
+      snprintf(value, sizeof(value), "-");
+    } else {
+      snprintf(value, sizeof(value), "FL%03ld", level);
+    }
+    add("Flugfläche", value);
+    formatAltitudeFeet(value, sizeof(value), a.geoAltitudeM);
+    add("Höhe (geo)", value);
+    if (isnan(a.velocityMs)) {
+      snprintf(value, sizeof(value), "-");
+    } else {
+      snprintf(value, sizeof(value), "%.0f kt", units::msToKnots(a.velocityMs));
+    }
+    add("Geschwindigkeit", value);
+    if (isnan(a.trackDeg)) {
+      snprintf(value, sizeof(value), "-");
+    } else {
+      snprintf(value, sizeof(value), "%.0f°", a.trackDeg);
+    }
+    add("Kurs", value);
+    if (isnan(a.verticalRateMs)) {
+      snprintf(value, sizeof(value), "-");
+    } else {
+      const float fpm = units::msToFeetPerMinute(a.verticalRateMs);
+      snprintf(value, sizeof(value), "%s%.0f ft/min", fpm >= 10.0f ? "+" : "", fabsf(fpm) < 10.0f ? 0.0f : fpm);
+    }
+    add("Steigrate", value);
+    ui::formatDecimal(number, sizeof(number), units::kmToNauticalMiles(a.distanceKm), 1);
+    snprintf(value, sizeof(value), "%s NM", number);
+    add("Entfernung", value);
+    snprintf(value, sizeof(value), "%.0f° (%s)", a.bearingDeg, compassPoint(a.bearingDeg));
+    add("Peilung", value);
+    add("Squawk", a.squawk[0] ? a.squawk : "-");
   } else {
-    snprintf(value, sizeof(value), "%.0f km/h", a.velocityMs * 3.6f);
+    formatAltitude(value, sizeof(value), a.baroAltitudeM);
+    add("Höhe (baro)", value);
+    formatAltitude(value, sizeof(value), a.geoAltitudeM);
+    add("Höhe (geo)", value);
+    if (isnan(a.velocityMs)) {
+      snprintf(value, sizeof(value), "-");
+    } else {
+      snprintf(value, sizeof(value), "%.0f km/h", a.velocityMs * 3.6f);
+    }
+    add("Geschwindigkeit", value);
+    if (isnan(a.trackDeg)) {
+      snprintf(value, sizeof(value), "-");
+    } else {
+      snprintf(value, sizeof(value), "%.0f°", a.trackDeg);
+    }
+    add("Kurs", value);
+    if (isnan(a.verticalRateMs)) {
+      snprintf(value, sizeof(value), "-");
+    } else {
+      ui::formatDecimal(number, sizeof(number), a.verticalRateMs, 1);
+      snprintf(value, sizeof(value), "%s%s m/s", a.verticalRateMs > 0.05f ? "+" : "", number);
+    }
+    add("Steigrate", value);
+    ui::formatDecimal(number, sizeof(number), a.distanceKm, 1);
+    snprintf(value, sizeof(value), "%s km", number);
+    add("Entfernung", value);
+    snprintf(value, sizeof(value), "%.0f° (%s)", a.bearingDeg, compassPoint(a.bearingDeg));
+    add("Peilung", value);
+    add("Squawk", a.squawk[0] ? a.squawk : "-");
+    snprintf(value, sizeof(value), "%s%s", positionSourceName(a.positionSource), a.onGround ? ", am Boden" : "");
+    add("Quelle", value);
   }
-  add("Geschwindigkeit", value);
-  if (isnan(a.trackDeg)) {
-    snprintf(value, sizeof(value), "-");
-  } else {
-    snprintf(value, sizeof(value), "%.0f°", a.trackDeg);
-  }
-  add("Kurs", value);
-  if (isnan(a.verticalRateMs)) {
-    snprintf(value, sizeof(value), "-");
-  } else {
-    ui::formatDecimal(number, sizeof(number), a.verticalRateMs, 1);
-    snprintf(value, sizeof(value), "%s%s m/s", a.verticalRateMs > 0.05f ? "+" : "", number);
-  }
-  add("Steigrate", value);
-  ui::formatDecimal(number, sizeof(number), a.distanceKm, 1);
-  snprintf(value, sizeof(value), "%s km", number);
-  add("Entfernung", value);
-  snprintf(value, sizeof(value), "%.0f° (%s)", a.bearingDeg, compassPoint(a.bearingDeg));
-  add("Peilung", value);
-  add("Squawk", a.squawk[0] ? a.squawk : "-");
-  snprintf(value, sizeof(value), "%s%s", positionSourceName(a.positionSource), a.onGround ? ", am Boden" : "");
-  add("Quelle", value);
   add("Letzter Kontakt", "");  // wird sekündlich aktualisiert
 
   int16_t y = 80;
@@ -432,7 +483,7 @@ void App::drawDetails() {
   tft_.setTextColor(ui::kColorStale, ui::kColorBackground);
   ui::drawText(tft_, "Typ, Registrierung, Start/Ziel:", ui::kMargin, 248);
   ui::drawText(tft_, "von OpenSky nicht geliefert", ui::kMargin, 262);
-  ui::drawButtonBar(tft_, kDetailButtons, 2);
+  ui::drawButtonBar(tft_, detailAviationUnits_ ? kDetailButtonsAviation : kDetailButtons, 3);
 }
 
 void App::updateDetailsAge() {
@@ -650,12 +701,16 @@ void App::handleTouch(const TouchState& touch) {
       handleRadarTouch(touch.x, touch.y);
       break;
     case Screen::Details:
-      switch (ui::buttonAt(tft_, touch.x, touch.y, 2)) {
+      switch (ui::buttonAt(tft_, touch.x, touch.y, 3)) {
         case 0:
           showScreen(Screen::Radar);
           break;
         case 1:
           showScreen(Screen::List);
+          break;
+        case 2:
+          detailAviationUnits_ = !detailAviationUnits_;
+          drawDetails();
           break;
         default:
           break;

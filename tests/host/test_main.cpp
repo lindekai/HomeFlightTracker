@@ -8,6 +8,7 @@
 #include "../../HomeFlightTracker/src/app/NightSchedule.h"
 #include "../../HomeFlightTracker/src/geo/Geo.h"
 #include "../../HomeFlightTracker/src/model/FlightList.h"
+#include "../../HomeFlightTracker/src/model/Units.h"
 #include "../../HomeFlightTracker/src/opensky/Quota.h"
 #include "../../HomeFlightTracker/src/opensky/StatesParser.h"
 
@@ -235,6 +236,28 @@ void testNightSchedule() {
   CHECK(secondsUntil(6 * 3600, end) == 86400);
 }
 
+void testUnits() {
+  CHECK_NEAR(units::metersToFeet(10668.0f), 35000.0, 0.5);
+  CHECK_NEAR(units::msToKnots(231.5f), 450.0, 0.1);
+  CHECK_NEAR(units::msToFeetPerMinute(5.08f), 1000.0, 0.1);
+  CHECK_NEAR(units::kmToNauticalMiles(185.2f), 100.0, 0.01);
+  CHECK(units::flightLevel(10668.0f) == 350);
+  CHECK(units::flightLevel(1524.0f) == 50);
+  CHECK(units::flightLevel(0.0f) == 0);
+  CHECK(units::flightLevel(-30.0f) == -1);
+  CHECK(units::flightLevel(NAN) == -1);
+}
+
+void testRangeQuota() {
+  // 250 km bei 52,3° N: etwa 4,7° x 7,7° ≈ 36 Quadratgrad, also 2 Credits; 60 s Intervall passt noch.
+  const geo::BoundingBox box = geo::boundingBox(kCenter, 250 * opensky::kQueryRadiusFactor);
+  CHECK(opensky::creditsPerRequest(box.areaSquareDegrees()) == 2);
+  CHECK(opensky::isIntervalAllowed(60, box.areaSquareDegrees(), true));
+  CHECK(!opensky::isIntervalAllowed(30, box.areaSquareDegrees(), true));
+  const geo::BoundingBox small = geo::boundingBox(kCenter, 10 * opensky::kQueryRadiusFactor);
+  CHECK(opensky::creditsPerRequest(small.areaSquareDegrees()) == 1);
+}
+
 }  // namespace
 
 int main() {
@@ -246,6 +269,8 @@ int main() {
   testParser();
   testFlightList();
   testNightSchedule();
+  testUnits();
+  testRangeQuota();
   printf("%d Prüfungen, %d Fehler\n", checks, failures);
   return failures == 0 ? 0 : 1;
 }

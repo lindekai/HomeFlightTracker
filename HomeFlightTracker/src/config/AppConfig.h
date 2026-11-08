@@ -37,7 +37,7 @@ struct AppConfig {
 
 namespace app_config {
 
-constexpr uint16_t kAllowedRangesKm[] = {25, 50, 100};
+constexpr uint16_t kAllowedRangesKm[] = {10, 25, 50, 100, 250};
 constexpr size_t kMinWebPasswordLength = 8;
 
 bool load(AppConfig& out);

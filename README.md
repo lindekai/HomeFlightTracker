@@ -15,14 +15,14 @@ Eigenständiges Tisch- und Wandgerät, das Flugbewegungen rund um einen frei wä
 
 | Bildschirm | Bedienung |
 |---|---|
-| Radar | Flugzeug antippen = auswählen (Kurzinfo); Kurzinfo oder erneutes Antippen = Details; überlappende Symbole: erneut antippen wechselt zum nächsten. **+** / **−** = hinein-/herauszoomen (25/50/100 km) |
+| Radar | Flugzeug antippen = auswählen (Kurzinfo); Kurzinfo oder erneutes Antippen = Details; überlappende Symbole: erneut antippen wechselt zum nächsten. **+** / **−** = hinein-/herauszoomen (10/25/50/100/250 km) |
 | Details | Werte aus OpenSky mit Einheiten; „–“ = nicht verfügbar |
 | Liste | nach Entfernung sortiert, Zeile antippen = Details, blättern mit Zurück/Weiter |
 | Menü | WLAN, IP-Adresse, Standort, OpenSky-Status, letzter Abruf, Credits; Setup, Kalibrierung, Diagnose |
 
 ## Funktionen (Ziel des MVP)
 
-- **Radar** mit Norden oben, Entfernungsringen und einstellbarer Reichweite (z. B. 25/50/100 km). Die Flugzeugsymbole zeigen in Bewegungsrichtung.
+- **Radar** mit Norden oben, Entfernungsringen und einstellbarer Reichweite (10, 25, 50, 100 oder 250 km). Die Flugzeugsymbole zeigen in Bewegungsrichtung.
 - **Antippen** eines Flugzeugs öffnet die Details: Callsign, ICAO24, Herkunftsland, Höhe, Geschwindigkeit, Kurs, Steigrate, Entfernung, letzter Kontakt.
 - **Flugliste**, sortiert nach Entfernung.
 - **Einrichtung ohne PC:** geschützter Setup-Access-Point mit Captive Portal für WLAN, Standort (Ortsname oder Koordinaten), OpenSky-Zugang, Reichweite und Abrufintervall.
@@ -70,7 +70,7 @@ HomeFlightTracker/
 │       ├── diag/                 Heap- und Ressourcenmessung
 │       ├── geo/                  Distanz, Peilung, Bounding Box
 │       ├── hwtest/               Diagnosemodus (Hardwaretest)
-│       ├── model/                Flugzeugdaten (Tabelle fester Größe)
+│       ├── model/                Flugzeugdaten (Tabelle fester Größe), Einheiten
 │       ├── net/                  WLAN, NTP, Setup-Portal, Weboberfläche
 │       ├── opensky/              OAuth2, Abruf, Streaming-Parser, Kontingent, Hintergrund-Task
 │       └── ui/                   Radar, Bedienelemente, Text mit Umlauten, Touch

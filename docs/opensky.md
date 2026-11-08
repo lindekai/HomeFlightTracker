@@ -34,6 +34,10 @@ Kosten von `/states/all` je nach Fläche der Bounding Box (Breitenspanne × Län
 
 **Beispiel:** 100 km Radius bei 52,3° N ergibt etwa 1,8° × 2,9° ≈ 5,3 Quadratgrad, also **1 Credit** pro Abruf.
 
+**250 km** ergeben bei 52,3° N mit Puffer etwa 4,7° × 7,7° ≈ 36 Quadratgrad, also **2 Credits** pro Abruf. Das Standardintervall von 60 s (2 880 Credits pro Tag) bleibt damit unter 80 % des Kontingents; kürzere Intervalle als etwa 54 s werden abgelehnt. Ohne OpenSky-Zugang ist 250 km nicht möglich. 10 bis 100 km kosten 1 Credit.
+
+Das Gerät hält höchstens die **100 nächstgelegenen** Flugzeuge im Speicher. Bei 250 km über Mitteleuropa sind tagsüber oft mehr im Radius; die entfernteren fehlen dann in Radar und Liste.
+
 ### Abrufintervall und Tagesverbrauch (registriert, 1 Credit/Abruf)
 
 | Intervall | Abrufe pro Tag | Anteil an 4 000 |
