@@ -135,7 +135,7 @@ Hinweis: Das Öffnen der seriellen Schnittstelle setzt das Gerät über den USB-
 |---|---|---|---|
 | 4.1 | Darstellung | Ringe, N oben, Symbole zeigen in Flugrichtung, Positionen passen zur Realität (z. B. Vergleich mit einer Flugverfolgungs-Website) | ☐ |
 | 4.2 | Geometrie | Flugzeug nördlich erscheint oben, östlich rechts; Entfernung in Kurzinfo = Position im Ringraster | ☐ |
-| 4.3 | Auswahl | Antippen wählt, Kurzinfo öffnet Details; bei überlappenden Symbolen schaltet erneutes Antippen durch | ☐ |
+| 4.3 | Auswahl | ohne Auswahl Kurzinfo am nächstgelegenen Flugzeug; Antippen wählt (orange), Kurzinfo öffnet Details; bei überlappenden Symbolen schaltet erneutes Antippen durch; leere Stelle hebt Auswahl auf | ☐ |
 | 4.4 | Details | Einheiten m, km/h, °, m/s, km; fehlende Werte „-“; Hinweis zu Typ/Start/Ziel; „Letzter Kontakt“ zählt hoch | ☐ |
 | 4.5 | Liste | sortiert nach Entfernung, Blättern, Zeile öffnet Details | ☐ |
 | 4.6 | Zoom | + / − wechselt 25/50/100 km, bleibt nach Neustart erhalten, löst keinen Abruf aus | ☐ |

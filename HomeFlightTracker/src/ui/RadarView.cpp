@@ -49,28 +49,31 @@ void RadarView::draw(const FlightList& flights, const Info& info) {
     canvas.fillRect(kCenter - w / 2 - 4, oy + kCenter + 14, w + 8, 18, ui::kColorBackground);
     ui::drawText(canvas, text, kCenter - w / 2, oy + kCenter + 16);
   } else {
-    int16_t selectedIndex = -1;
-    int16_t selectedX = 0, selectedY = 0;
+    int16_t labelIndex = -1;
+    int16_t labelX = 0, labelY = 0;
     for (uint16_t i = flights.size(); i-- > 0;) {  // entfernte zuerst, nahe liegen oben
       const Aircraft& aircraft = flights[i];
       int16_t x, y;
       if (!project(aircraft, info.rangeKm, x, y)) continue;
-      if (info.selectedIcao24[0] != '\0' && strcmp(aircraft.icao24, info.selectedIcao24) == 0) {
-        selectedIndex = i;
-        selectedX = x;
-        selectedY = y;
-        continue;
+      if (info.labelIcao24[0] != '\0' && strcmp(aircraft.icao24, info.labelIcao24) == 0) {
+        labelIndex = i;
+        labelX = x;
+        labelY = y;
+        continue;  // zuletzt zeichnen, damit es oben liegt
       }
-      const int32_t reference = aircraft.timePosition > 0 ? aircraft.timePosition : aircraft.lastContact;
-      const bool stalePosition = info.dataState == DataState::Stale || info.apiTime - reference > kStalePositionS;
-      const uint16_t color = stalePosition ? ui::kColorStale : aircraft.onGround ? ui::kColorGround : ui::kColorAircraft;
-      drawAircraft(canvas, x, y + oy, stalePosition ? NAN : aircraft.trackDeg, color);
+      const uint16_t color = aircraftColor(aircraft, info);
+      drawAircraft(canvas, x, y + oy, color == ui::kColorStale ? NAN : aircraft.trackDeg, color);
     }
-    if (selectedIndex >= 0) {
-      const Aircraft& aircraft = flights[selectedIndex];
-      canvas.drawCircle(selectedX, selectedY + oy, 12, ui::kColorSelected);
-      drawAircraft(canvas, selectedX, selectedY + oy, aircraft.trackDeg, ui::kColorSelected);
-      drawLabel(canvas, oy, aircraft, selectedX, selectedY);
+    if (labelIndex >= 0) {
+      const Aircraft& aircraft = flights[labelIndex];
+      if (info.labelIsSelection) {
+        canvas.drawCircle(labelX, labelY + oy, 12, ui::kColorSelected);
+        drawAircraft(canvas, labelX, labelY + oy, aircraft.trackDeg, ui::kColorSelected);
+      } else {
+        const uint16_t color = aircraftColor(aircraft, info);
+        drawAircraft(canvas, labelX, labelY + oy, color == ui::kColorStale ? NAN : aircraft.trackDeg, color);
+      }
+      drawLabel(canvas, oy, aircraft, labelX, labelY, info.labelIsSelection);
     }
     if (info.dataState == DataState::Stale) {
       canvas.setTextColor(ui::kColorWarning, ui::kColorBackground);
@@ -139,7 +142,14 @@ void RadarView::drawAircraft(TFT_eSPI& canvas, int16_t x, int16_t y, float track
   }
 }
 
-void RadarView::drawLabel(TFT_eSPI& canvas, int16_t oy, const Aircraft& aircraft, int16_t x, int16_t y) {
+uint16_t RadarView::aircraftColor(const Aircraft& aircraft, const Info& info) const {
+  const int32_t reference = aircraft.timePosition > 0 ? aircraft.timePosition : aircraft.lastContact;
+  if (info.dataState == DataState::Stale || info.apiTime - reference > kStalePositionS) return ui::kColorStale;
+  return aircraft.onGround ? ui::kColorGround : ui::kColorAircraft;
+}
+
+void RadarView::drawLabel(TFT_eSPI& canvas, int16_t oy, const Aircraft& aircraft, int16_t x, int16_t y,
+                          bool selected) {
   char line1[16];
   char line2[32];
   char distance[12];
@@ -158,9 +168,10 @@ void RadarView::drawLabel(TFT_eSPI& canvas, int16_t oy, const Aircraft& aircraft
   int16_t lx = constrain(x - w / 2, 0, kSize - w);
   int16_t ly = y + 14;
   if (ly + h > kSize) ly = y - 14 - h;
-  canvas.fillRoundRect(lx, oy + ly, w, h, 3, ui::kColorSelectedBg);
-  canvas.drawRoundRect(lx, oy + ly, w, h, 3, ui::kColorSelected);
-  canvas.setTextColor(ui::kColorSelectedText, ui::kColorSelectedBg);
+  const uint16_t background = selected ? ui::kColorSelectedBg : ui::kColorRow;
+  canvas.fillRoundRect(lx, oy + ly, w, h, 3, background);
+  canvas.drawRoundRect(lx, oy + ly, w, h, 3, selected ? ui::kColorSelected : ui::kColorRing);
+  canvas.setTextColor(selected ? ui::kColorSelectedText : ui::kColorText, background);
   ui::drawText(canvas, line1, lx + 4, oy + ly + 2);
   ui::drawText(canvas, line2, lx + 4, oy + ly + 18);
   labelX_ = lx;

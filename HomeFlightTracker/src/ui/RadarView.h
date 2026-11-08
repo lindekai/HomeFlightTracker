@@ -17,7 +17,10 @@ class RadarView {
     DataState dataState = DataState::Waiting;
     int64_t apiTime = 0;          // Zeitstempel der Daten für das Positionsalter
     const char* waitingText = "";  // Hinweis, solange keine Daten vorliegen
-    const char* selectedIcao24 = "";
+    // Flugzeug mit Kurzinfo: das ausgewählte (orange hervorgehoben) oder ohne Auswahl
+    // das nächstgelegene (neutrale Kurzinfo).
+    const char* labelIcao24 = "";
+    bool labelIsSelection = false;
   };
 
   static constexpr int16_t kSize = 240;
@@ -45,7 +48,8 @@ class RadarView {
   bool project(const Aircraft& aircraft, uint16_t rangeKm, int16_t& x, int16_t& y) const;
   void drawBackground(TFT_eSPI& canvas, int16_t oy, const Info& info, uint16_t count);
   void drawAircraft(TFT_eSPI& canvas, int16_t x, int16_t y, float trackDeg, uint16_t color);
-  void drawLabel(TFT_eSPI& canvas, int16_t oy, const Aircraft& aircraft, int16_t x, int16_t y);
+  void drawLabel(TFT_eSPI& canvas, int16_t oy, const Aircraft& aircraft, int16_t x, int16_t y, bool selected);
+  uint16_t aircraftColor(const Aircraft& aircraft, const Info& info) const;
 
   TFT_eSPI& tft_;
   TFT_eSprite sprite_;

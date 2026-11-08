@@ -75,6 +75,7 @@ class App {
   FlightList flights_;
   uint32_t flightsSequence_ = 0;
   char selectedIcao24_[7] = "";
+  char labelIcao24_[7] = "";  // Flugzeug mit Kurzinfo im zuletzt gezeichneten Radar
   Aircraft detail_{};
   bool detailInData_ = false;
   uint8_t listPage_ = 0;

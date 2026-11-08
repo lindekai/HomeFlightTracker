@@ -43,8 +43,9 @@ Das Portal ist in fünf Schritte gegliedert: WLAN, Standort (Suche oder Koordina
 
 - **Radar, Details, Liste** wie in den Mockups. Das frühere Statusbild ist jetzt das **Menü**: WLAN, IP-Adresse, Standort, OpenSky-Status, letzter Abruf, Credits und die Schaltflächen Radar, Setup, Kalibr. und Diag.
 - **Zoom:** **+** = hineinzoomen (kleinerer Radius), **−** = herauszoomen. Ein größerer Radius wird erst beim nächsten regulären Abruf mit Daten gefüllt; der Hinweis erscheint in der Fußzeile. Die Reichweite wird gespeichert.
+- **Kurzinfo:** Ohne Auswahl trägt automatisch das nächstgelegene Flugzeug im Radius eine neutrale Kurzinfo (Callsign, Höhe bzw. „am Boden“, Entfernung). Ein ausgewähltes Flugzeug wird orange hervorgehoben und trägt die Kurzinfo stattdessen. Antippen einer Kurzinfo öffnet die Details.
 - **Auswahl:**
-  - Antippen wählt das nächstgelegene Symbol im Umkreis von 18 px.
+  - Antippen wählt das nächstgelegene Symbol im Umkreis von 20 px; Antippen einer leeren Stelle hebt die Auswahl auf.
   - Bei Überlappung wechselt erneutes Antippen zum nächsten Kandidaten.
   - Ist nur ein Kandidat vorhanden und bereits ausgewählt, öffnen sich die Details. Das gilt auch beim Antippen der Kurzinfo.
 - **Flugzeugsymbol:** 17 × 17 px, vorgedreht in 24 Richtungen (15°-Schritte) mit Kantenglättung (2 Bit Deckung, Randpixel mit dem Hintergrund gemischt). Die Bitmaps erzeugt `tools/gen_icons.py` aus einer Vektor-Silhouette; das Gerät dreht nicht selbst. Flugzeuge am Boden: blaugrau, Kurzinfo „am Boden“ statt Höhe.

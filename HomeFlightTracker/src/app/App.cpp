@@ -305,7 +305,17 @@ void App::drawRadar() {
   info.dataState = lastDataState_;
   info.apiTime = status.apiTime;
   info.waitingText = status.message[0] != '\0' ? status.message : "Starte ...";
-  info.selectedIcao24 = selectedIcao24_;
+  // Kurzinfo: ausgewähltes Flugzeug, sonst das nächstgelegene im Radius (Liste ist nach Entfernung sortiert).
+  const Aircraft* selected = findSelected();
+  if (selected != nullptr) {
+    strlcpy(labelIcao24_, selected->icao24, sizeof(labelIcao24_));
+    info.labelIsSelection = true;
+  } else if (flights_.size() > 0 && flights_[0].distanceKm <= config_.rangeKm) {
+    strlcpy(labelIcao24_, flights_[0].icao24, sizeof(labelIcao24_));
+  } else {
+    labelIcao24_[0] = '\0';
+  }
+  info.labelIcao24 = labelIcao24_;
   radar_.draw(flights_, info);
   drawRadarFooter(status);
 }
@@ -708,10 +718,16 @@ void App::handleRadarTouch(uint16_t x, uint16_t y) {
   }
   if (!radar_.contains(x, y)) return;
 
-  // Kurzinfo des ausgewählten Flugzeugs antippen öffnet die Details.
-  if (radar_.labelHit(x, y) && findSelected() != nullptr) {
-    showScreen(Screen::Details);
-    return;
+  // Kurzinfo antippen öffnet die Details (auch die automatische des nächstgelegenen Flugzeugs).
+  if (radar_.labelHit(x, y) && labelIcao24_[0] != '\0') {
+    for (uint16_t i = 0; i < flights_.size(); ++i) {
+      if (strcmp(flights_[i].icao24, labelIcao24_) != 0) continue;
+      strlcpy(selectedIcao24_, labelIcao24_, sizeof(selectedIcao24_));
+      detail_ = flights_[i];
+      detailInData_ = true;
+      showScreen(Screen::Details);
+      return;
+    }
   }
   uint16_t candidates[8];
   const uint8_t count = radar_.hitTest(flights_, config_.rangeKm, x, y, candidates, 8);
