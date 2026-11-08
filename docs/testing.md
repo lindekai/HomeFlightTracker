@@ -68,13 +68,14 @@ Messung vom 2026-11-08 ohne aktives WLAN. **Folgerung:** Ein 16-Bit-Vollsprite f
 tests/host/run.sh
 ```
 
-Stand: 119 Prüfungen, 0 Fehler. Geprüft werden:
+Stand: 127 Prüfungen, 0 Fehler. Geprüft werden:
 
 - Distanz: Nullstrecke, 1° Breite, Berlin–München, Symmetrie
 - Peilung: Nord, Süd, Ost, West, Nordwest, Wertebereich
 - Bounding Box: 100 km bei 52,3° N, Punkte auf dem Kreis, Datumsgrenze, Polnähe, hohe Breiten
 - Gültigkeit von Koordinaten, Normalisierung des Längengrads
 - Credits je Flächenstufe, Tagesverbrauch, kürzestes zulässiges Intervall (authentifiziert und anonym), Reichweiten 10 und 250 km
+- Profilwahl: aktives WLAN sichtbar, anderes bekanntes WLAN, mehrere (stärkstes Signal), keines, unzulässiges Profil, gleiches WLAN in zwei Profilen
 - Flugzeugkategorie: Feld 17 mit und ohne `extended=1`, Zuordnung zu den Symbolformen, Klartext
 - Einheiten: Fuß, Knoten, ft/min, Seemeilen, Flugfläche (inklusive fehlender und negativer Höhe)
 - Parser:
@@ -162,7 +163,23 @@ Hinweis: Das Öffnen der seriellen Schnittstelle setzt das Gerät über den USB-
 | E.7 | Kein Dauerwecken | Gerät bleibt im Tiefschlaf (keine wiederholten Neustarts ohne Berührung) | ☐ |
 | E.8 | Verbrauch | mit USB-Strommessgerät: Normalbetrieb hell/gedimmt/aus, Tiefschlaf | ☐ |
 
+**Vergleichswert ohne Energiesparen** (Firmware 0.4.1, 2026-11-08): Akku 5 000 mAh, Betrieb 01:30–11:05 Uhr (9,6 h), danach 78 % (Start vermutlich 100 %). Rund 1 100 mAh, also etwa 115 mA an der Zelle (≈ 0,4 W); hochgerechnet etwa 43 h Laufzeit. Die Prozentanzeige von Powerbanks ist grob.
+
+Achtung beim Nachttest: Viele Powerbanks schalten bei geringer Last (etwa < 50–100 mA) ab. Im Tiefschlaf kann das Gerät dann stromlos werden und nicht mehr per Timer aufwachen.
+
 Tipp für den Test: Nachtruhe im Portal kurzzeitig auf ein Fenster ab der aktuellen Uhrzeit setzen (z. B. 10:00–10:30).
+
+## Profile (WLAN + Standort)
+
+| Nr. | Prüfung | Erwartung | Ergebnis |
+|---|---|---|---|
+| P.1 | Migration | nach dem Flashen von 0.8.0 zeigt Menü → Profil ein Profil (Name = Ortsbezeichnung), aktiv | ☐ |
+| P.2 | Anlegen | Weboberfläche: zweites Profil mit anderem Standort anlegen; Liste zeigt es; aktives Profil bleibt | ☐ |
+| P.3 | Wechsel am Gerät | Menü → Profil → zweites Profil → Ja: Neustart, Radar am neuen Standort, Weboberfläche zeigt es als aktiv | ☐ |
+| P.4 | Automatische Wahl | Profil mit fremdem WLAN aktiv lassen, Gerät neu starten: „Suche bekannte Netze …“, danach wechselt es auf das Profil des empfangbaren WLANs (Fußzeile „Profil: …“) | ☐ |
+| P.5 | Ablehnung | Profil an einem Ort, der das Kontingent sprengt (z. B. 250 km bei 30 s): Anlegen wird mit Grund abgelehnt | ☐ |
+| P.6 | Löschen | nicht aktives Profil löschen; aktives ist nicht löschbar | ☐ |
+| P.7 | Menü „Mehr“ | Mehr → Kalibr. und Diag. funktionieren, Zurück stellt die Leiste wieder her | ☐ |
 
 ## Spätere Testkataloge (Übersicht)
 

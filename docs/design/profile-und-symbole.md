@@ -21,7 +21,7 @@ Stand: 2026-11-08, abgestimmt vor der Umsetzung (Firmware 0.7.0 und 0.8.0).
 ### Daten
 
 - Bis zu 5 Profile, je Name (max. 24 Zeichen), WLAN-Name, WLAN-Passwort, Breite, Länge, Ortsname.
-- Gespeichert im NVS-Namespace `hft-prof` (ein Blob pro Profil, Schlüssel `p0` … `p4`, dazu `active`).
+- Gespeichert im NVS-Namespace `hft-prof` als ein Blob (`store`: Version, Anzahl, aktives Profil, Profile).
 - `AppConfig` bleibt die Kopie des aktiven Profils. OpenSky-Abruf, Radar und Validierung lesen weiter nur `AppConfig`.
 - Migration: Gibt es noch keine Profile, wird aus der vorhandenen Konfiguration Profil 1 (Name = Ortsname, sonst „Profil 1“).
 - Speichern im Portal (Abschnitte 1 und 2) aktualisiert zugleich das aktive Profil.

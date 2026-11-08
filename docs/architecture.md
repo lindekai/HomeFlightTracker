@@ -43,9 +43,11 @@ HomeFlightTracker/                    Sketch-Ordner
     ├── app/BootRequest.*             Startwunsch über Software-Neustart (RTC-Speicher)         [M2]
     ├── app/PowerManager.*            Dimmen per PWM, Display aus, Nachtruhe mit Tiefschlaf      [Energie]
     ├── app/NightSchedule.*           Zeitfenster der Nachtruhe (host-getestet)                  [Energie]
+    ├── app/ProfileSelect.*           automatische Profilwahl nach sichtbaren WLANs (host-getestet)
     ├── board/BoardPins.h             feste Pinbelegung der Trägerplatine                       [M1]
     ├── config/HardwareSettings.*     Rotation + Touch-Kalibrierung im NVS                      [M1]
     ├── config/AppConfig.*            WLAN, Standort, OpenSky, Radar, Geräte-Passwort im NVS    [M2]
+    ├── config/Profiles.*             Profile aus WLAN + Standort (NVS „hft-prof“, max. 5)
     ├── diag/HeapReport.*             Heap-Messung                                               [M1]
     ├── geo/Geo.*                     Distanz, Peilung, Bounding Box (host-getestet)             [M2]
     ├── hwtest/HardwareTestApp.*      Diagnosemodus (Hardwaretest aus M1)                        [M1]
@@ -86,7 +88,8 @@ Setup- und Diagnosewunsch werden über einen Software-Neustart im RTC-Speicher w
 | GET | `/api/estimate` | Credit-Schätzung für Standort, Reichweite, Intervall, Nutzerstufe |
 | GET | `/api/scan` | WLAN-Suche (asynchron, wird abgefragt) |
 | POST/GET | `/api/wifi/test` | Verbindungstest starten / Ergebnis (nur Setup-Modus) |
-| POST | `/api/config` | Einstellungen prüfen, speichern, Neustart |
+| POST | `/api/config` | Einstellungen prüfen, speichern (auch ins aktive Profil), Neustart |
+| POST | `/api/profiles` | Profil anlegen (`add`), löschen (`delete`) oder aktivieren (`activate`, mit Neustart) |
 
 - POST-Anfragen müssen den Header `X-HFT: 1` tragen. Fremde Webseiten können ihn ohne CORS-Freigabe nicht setzen; das schützt gegen Cross-Site-Requests.
 - Im Heimnetz verlangt jede Anfrage eine HTTP-Digest-Anmeldung (`admin` + Geräte-Passwort). Das Passwort wird dabei nicht im Klartext übertragen.
@@ -183,5 +186,7 @@ Weitere M1-Messung: freier Heap nach Display-Init (ohne WLAN) 333 156 Byte; Rada
 | E10 | Umlaute auf dem Display über eigene UTF-8-Ausgabe (Grundbuchstabe + Punkte) | Font 2 hat keine Umlaute; ein zusätzlicher Font mit Latin-1 kostet Flash und Konvertierungsaufwand |
 | E11 | Zoom ändert die Abfragereichweite erst beim nächsten regulären Abruf | Touch löst keinen Abruf aus; der Credit-Verbrauch bleibt planbar |
 | E12 | Nachtruhe als Tiefschlaf mit Touch-Wecken statt nur „Display aus“ | Gerät läuft zu Hause am Akku; der größte Gewinn liegt in den Nachtstunden ohne Nutzen |
+| E14 | Profile als Kopiervorlage: `AppConfig` bleibt die Kopie des aktiven Profils | OpenSky-Dienst, Radar und Validierung bleiben unverändert; ein Wechsel ist ein Speichern mit Neustart |
+| E15 | Profile anlegen nur in der Weboberfläche, am Gerät nur wählen | Eine Bildschirmtastatur auf 240 px Breite wäre mühsam und aufwendig; Passwörter tippt man am Handy einfacher |
 | E13 | Wecken in der Nachtruhe startet den regulären Abruftakt | Nach dem Wecken sollen aktuelle Daten erscheinen; der Verbrauch ist auf 1 Credit je Intervall während der 2-minütigen Wachphase begrenzt |
 | E9 | Werksreset nur lokal (8 s Halten beim Start) | kein Reset über das Netz möglich, auch nicht bei verlorenem Passwort |

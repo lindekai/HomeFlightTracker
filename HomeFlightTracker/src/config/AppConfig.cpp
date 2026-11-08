@@ -6,6 +6,7 @@
 #include "../geo/Geo.h"
 #include "../opensky/Quota.h"
 #include "HardwareSettings.h"
+#include "Profiles.h"
 
 namespace {
 
@@ -140,6 +141,7 @@ bool app_config::factoryReset() {
   Preferences prefs;
   bool ok = prefs.begin(kNamespace, false) && prefs.clear();
   prefs.end();
+  ok &= profiles::clear();
   ok &= hardware_settings::clearAll();
   return ok;
 }

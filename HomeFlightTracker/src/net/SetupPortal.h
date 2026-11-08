@@ -39,6 +39,7 @@ class SetupPortal {
   void handleWifiTestStart();
   void handleWifiTestStatus();
   void handleConfig();
+  void handleProfiles();
   void handleOpenSkyTestStart();
   void handleOpenSkyTestStatus();
   void handleNotFound();

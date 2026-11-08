@@ -4,6 +4,7 @@
 #include <WiFi.h>
 #include <string.h>
 
+#include "../config/Profiles.h"
 #include "../geo/Geo.h"
 #include "../opensky/Quota.h"
 #include "PortalPage.h"
@@ -27,6 +28,7 @@ void SetupPortal::begin(Mode mode, const char* firmwareVersion) {
   server_.on("/api/wifi/test", HTTP_POST, [this] { handleWifiTestStart(); });
   server_.on("/api/wifi/test", HTTP_GET, [this] { handleWifiTestStatus(); });
   server_.on("/api/config", HTTP_POST, [this] { handleConfig(); });
+  server_.on("/api/profiles", HTTP_POST, [this] { handleProfiles(); });
   server_.on("/api/opensky/test", HTTP_POST, [this] { handleOpenSkyTestStart(); });
   server_.on("/api/opensky/test", HTTP_GET, [this] { handleOpenSkyTestStatus(); });
   server_.onNotFound([this] { handleNotFound(); });
@@ -118,6 +120,20 @@ void SetupPortal::handleState() {
   power["nightEnabled"] = config_.nightEnabled;
   power["nightStartMin"] = config_.nightStartMin;
   power["nightEndMin"] = config_.nightEndMin;
+
+  // Profile ohne Passwörter
+  ProfileStore store;
+  profiles::load(store);
+  JsonObject profileInfo = doc["profiles"].to<JsonObject>();
+  profileInfo["max"] = ProfileStore::kMax;
+  profileInfo["active"] = store.active;
+  JsonArray items = profileInfo["items"].to<JsonArray>();
+  for (uint8_t i = 0; i < store.count; ++i) {
+    JsonObject item = items.add<JsonObject>();
+    item["name"] = store.items[i].name;
+    item["ssid"] = store.items[i].wifiSsid;
+    item["location"] = store.items[i].locationName;
+  }
 
   String body;
   serializeJson(doc, body);
@@ -310,9 +326,118 @@ void SetupPortal::handleConfig() {
     return;
   }
   config_ = updated;
+  profiles::updateActive(config_);
   Serial.println("[web] Konfiguration gespeichert");
   sendJson(200, "{\"ok\":true}");
   restartRequested_ = true;
+}
+
+// Profile: {"action":"add"|"delete"|"activate", ...}. Aktivieren übernimmt WLAN und Standort
+// in die Konfiguration und startet neu.
+void SetupPortal::handleProfiles() {
+  if (!authorize() || !checkPostRequest()) return;
+  JsonDocument request;
+  if (deserializeJson(request, server_.arg("plain"))) {
+    sendError(400, "Ungültige Anfrage");
+    return;
+  }
+  ProfileStore store;
+  if (!profiles::load(store)) {
+    sendError(409, "Erst die Konfiguration speichern");
+    return;
+  }
+  const char* action = request["action"] | "";
+
+  if (strcmp(action, "add") == 0) {
+    if (store.count >= ProfileStore::kMax) {
+      sendError(400, "Höchstens 5 Profile");
+      return;
+    }
+    const char* name = request["name"] | "";
+    const char* ssid = request["wifiSsid"] | "";
+    const char* password = request["wifiPassword"] | "";
+    const bool open = request["wifiOpen"] | false;
+    if (strlen(name) >= sizeof(Profile::name) || strlen(ssid) > 32 || strlen(password) > 63) {
+      sendError(400, "Angaben zu lang");
+      return;
+    }
+    if (!request["lat"].is<double>() || !request["lon"].is<double>()) {
+      sendError(400, "Standort fehlt");
+      return;
+    }
+    for (uint8_t i = 0; i < store.count; ++i) {
+      if (strcmp(store.items[i].name, name) == 0) {
+        sendError(400, "Profilname schon vergeben");
+        return;
+      }
+    }
+    Profile profile{};
+    strlcpy(profile.name, name, sizeof(profile.name));
+    strlcpy(profile.wifiSsid, ssid, sizeof(profile.wifiSsid));
+    if (!open && password[0] == '\0') {
+      // Leeres Passwort: gespeichertes Passwort eines Profils mit demselben WLAN übernehmen.
+      for (uint8_t i = 0; i < store.count && password[0] == '\0'; ++i) {
+        if (strcmp(store.items[i].wifiSsid, ssid) == 0) password = store.items[i].wifiPassword;
+      }
+      if (password[0] == '\0') {
+        sendError(400, "WLAN-Passwort fehlt (oder „offenes Netz“ wählen)");
+        return;
+      }
+    }
+    strlcpy(profile.wifiPassword, open ? "" : password, sizeof(profile.wifiPassword));
+    profile.latitude = request["lat"].as<double>();
+    profile.longitude = request["lon"].as<double>();
+    strlcpy(profile.locationName, request["locationName"] | "", sizeof(profile.locationName));
+    const char* error = profiles::validate(profile, config_);
+    if (error != nullptr) {
+      sendError(400, error);
+      return;
+    }
+    store.items[store.count++] = profile;
+    if (!profiles::save(store)) {
+      sendError(500, "Speichern fehlgeschlagen");
+      return;
+    }
+    Serial.printf("[profile] angelegt: %s\n", profile.name);
+    sendJson(200, "{\"ok\":true}");
+    return;
+  }
+
+  const int index = request["index"] | -1;
+  if (index < 0 || index >= store.count) {
+    sendError(400, "Profil nicht gefunden");
+    return;
+  }
+  if (strcmp(action, "delete") == 0) {
+    if (index == store.active) {
+      sendError(400, "Das aktive Profil kann nicht gelöscht werden");
+      return;
+    }
+    if (!profiles::remove(store, index)) {
+      sendError(500, "Löschen fehlgeschlagen");
+      return;
+    }
+    sendJson(200, "{\"ok\":true}");
+  } else if (strcmp(action, "activate") == 0) {
+    const char* error = profiles::validate(store.items[index], config_);
+    if (error != nullptr) {
+      sendError(400, error);
+      return;
+    }
+    AppConfig updated = config_;
+    profiles::applyTo(store.items[index], updated);
+    store.active = index;
+    if (!app_config::save(updated) || !profiles::save(store)) {
+      sendError(500, "Speichern fehlgeschlagen");
+      return;
+    }
+    config_ = updated;
+    Serial.printf("[profile] aktiviert: %s\n", store.items[index].name);
+    sendJson(200, "{\"ok\":true}");
+    restartRequested_ = true;
+  } else {
+    sendError(400, "Unbekannte Aktion");
+  }
 }
 
 void SetupPortal::handleOpenSkyTestStart() {

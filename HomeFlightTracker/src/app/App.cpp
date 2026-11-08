@@ -12,6 +12,7 @@
 #include "../opensky/Quota.h"
 #include "../ui/Widgets.h"
 #include "BootRequest.h"
+#include "ProfileSelect.h"
 #include "Version.h"
 
 namespace {
@@ -20,7 +21,9 @@ const char* const kRadarButtons[] = {"-", "Liste", "Menü", "+"};
 const char* const kDetailButtons[] = {"< Radar", "Liste", "Fuß"};
 const char* const kDetailButtonsAviation[] = {"< Radar", "Liste", "Meter"};
 const char* const kListButtons[] = {"< Radar", "Zurück", "Weiter"};
-const char* const kMenuButtons[] = {"Radar", "Setup", "Kalibr.", "Diag."};
+const char* const kMenuButtons[] = {"Radar", "Profil", "Setup", "Mehr"};
+const char* const kMenuMoreButtons[] = {"Zurück", "Kalibr.", "Diag."};
+const char* const kProfileButtons[] = {"< Menü"};
 const char* const kConfirmButtons[] = {"Ja", "Nein"};
 const char* const kSetupButtonsCancel[] = {"Abbrechen"};
 
@@ -208,12 +211,51 @@ void App::startNormalMode() {
   mode_ = Mode::Normal;
   // Sprite vor WLAN/TLS reservieren, solange der Heap noch unfragmentiert ist.
   radar_.begin(kRadarTop);
+  selectProfileAtBoot();
   wifi_.startStation(config_.wifiSsid, config_.wifiPassword);
   portal_.setOpenSkyService(&service_);
   portal_.begin(SetupPortal::Mode::Lan, kFirmwareVersion);
   service_.begin(config_);
   power_.begin(config_);
   showScreen(Screen::Radar);
+}
+
+void App::selectProfileAtBoot() {
+  profiles::updateActive(config_);  // legt beim ersten Start Profil 1 aus der Konfiguration an
+  ProfileStore store;
+  if (!profiles::load(store) || store.count < 2 || PowerManager::wokeFromDeepSleep()) return;
+
+  ui::drawMessage(tft_, "WLAN", "Suche bekannte Netze ...", ui::kColorAccent);
+  WiFi.persistent(false);
+  WiFi.setHostname(WifiManager::kHostname);  // muss vor dem Start der Station gesetzt sein
+  WiFi.mode(WIFI_STA);
+  const int16_t found = WiFi.scanNetworks();
+  constexpr uint8_t kMaxVisible = 32;
+  const uint8_t count = found > 0 ? min<int16_t>(found, kMaxVisible) : 0;
+  String ssids[kMaxVisible];
+  profile_select::VisibleNetwork visible[kMaxVisible];
+  for (uint8_t i = 0; i < count; ++i) {
+    ssids[i] = WiFi.SSID(i);
+    visible[i] = {ssids[i].c_str(), static_cast<int8_t>(WiFi.RSSI(i))};
+  }
+  const char* profileSsids[ProfileStore::kMax];
+  bool allowed[ProfileStore::kMax];
+  for (uint8_t i = 0; i < store.count; ++i) {
+    profileSsids[i] = store.items[i].wifiSsid;
+    allowed[i] = profiles::validate(store.items[i], config_) == nullptr;
+  }
+  const int8_t choice = profile_select::choose(profileSsids, allowed, store.count, store.active, visible, count);
+  WiFi.scanDelete();
+  Serial.printf("[profile] %u Netze sichtbar, Profil \"%s\"\n", count, store.items[choice].name);
+  if (choice == store.active) return;
+
+  profiles::applyTo(store.items[choice], config_);
+  store.active = choice;
+  app_config::save(config_);
+  profiles::save(store);
+  char notice[sizeof(notice_)];
+  snprintf(notice, sizeof(notice), "Profil: %s", store.items[choice].name);
+  showNotice(notice);
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -289,6 +331,19 @@ void App::showScreen(Screen screen) {
     case Screen::Menu:
       drawMenu();
       break;
+    case Screen::Profiles:
+      drawProfiles();
+      break;
+    case Screen::ConfirmProfile: {
+      const Profile& p = profiles_.items[profileChoice_];
+      ui::drawMessage(tft_, "Profil wechseln?", p.name, ui::kColorAccent);
+      char line[64];
+      snprintf(line, sizeof(line), "WLAN %s, danach Neustart", p.wifiSsid);
+      tft_.setTextColor(ui::kColorMuted, ui::kColorBackground);
+      ui::drawText(tft_, line, tft_.width() / 2 - ui::textWidth(tft_, line) / 2, tft_.height() / 2 + 28);
+      ui::drawButtonBar(tft_, kConfirmButtons, 2);
+      break;
+    }
     case Screen::ConfirmSetup:
       drawConfirmSetupScreen();
       break;
@@ -565,7 +620,11 @@ void App::drawList() {
 void App::drawMenu() {
   tft_.fillScreen(ui::kColorBackground);
   updateMenu();
-  ui::drawButtonBar(tft_, kMenuButtons, 4);
+  if (menuMore_) {
+    ui::drawButtonBar(tft_, kMenuMoreButtons, 3);
+  } else {
+    ui::drawButtonBar(tft_, kMenuButtons, 4);
+  }
 }
 
 void App::updateMenu() {
@@ -688,6 +747,59 @@ void App::updateSetupScreen() {
   ui::drawLine(tft_, y, line, clients > 0 ? ui::kColorAccent : ui::kColorMuted);
 }
 
+void App::drawProfiles() {
+  profiles::load(profiles_);
+  tft_.fillScreen(ui::kColorBackground);
+  drawTopBar(service_.status());
+  tft_.setTextColor(ui::kColorText, ui::kColorBackground);
+  ui::drawText(tft_, "Profile", ui::kMargin, 26);
+  tft_.setTextColor(ui::kColorMuted, ui::kColorBackground);
+  ui::drawText(tft_, "antippen = wechseln", tft_.width() - ui::kMargin, 26, 2, true);
+
+  for (uint8_t i = 0; i < profiles_.count; ++i) {
+    const Profile& p = profiles_.items[i];
+    const int16_t y = kProfileTop + i * kProfileRowHeight;
+    const bool active = i == profiles_.active;
+    const uint16_t background = active ? ui::kColorSelectedBg : ui::kColorRow;
+    tft_.fillRoundRect(4, y, tft_.width() - 8, kProfileRowHeight - 3, 3, background);
+    tft_.setTextColor(active ? ui::kColorSelectedText : ui::kColorText, background);
+    ui::drawText(tft_, p.name, 10, y + 3);
+    if (active) ui::drawText(tft_, "aktiv", tft_.width() - 10, y + 3, 2, true);
+    char line[96];
+    snprintf(line, sizeof(line), "%s · %s", p.wifiSsid, p.locationName[0] ? p.locationName : "-");
+    tft_.setTextColor(ui::kColorMuted, background);
+    ui::drawText(tft_, line, 10, y + 19);
+  }
+  int16_t y = kProfileTop + profiles_.count * kProfileRowHeight + 6;
+  if (profileError_ != nullptr) {
+    tft_.setTextColor(ui::kColorWarning, ui::kColorBackground);
+    ui::drawText(tft_, profileError_, ui::kMargin, y);
+    y += ui::kLineHeight;
+  }
+  if (profiles_.count < ProfileStore::kMax) {
+    tft_.setTextColor(ui::kColorStale, ui::kColorBackground);
+    ui::drawText(tft_, "Neue Profile in der Weboberfläche", ui::kMargin, y);
+  }
+  ui::drawButtonBar(tft_, kProfileButtons, 1);
+}
+
+void App::activateProfile(uint8_t index) {
+  profileError_ = profiles::validate(profiles_.items[index], config_);
+  if (profileError_ != nullptr) {
+    showScreen(Screen::Profiles);
+    return;
+  }
+  profiles::applyTo(profiles_.items[index], config_);
+  profiles_.active = index;
+  if (!app_config::save(config_) || !profiles::save(profiles_)) {
+    profileError_ = "Speichern fehlgeschlagen";
+    showScreen(Screen::Profiles);
+    return;
+  }
+  Serial.printf("[profile] gewechselt: %s\n", profiles_.items[index].name);
+  scheduleRestart(profiles_.items[index].name, "Neustart ...");
+}
+
 void App::drawConfirmSetupScreen() {
   ui::drawMessage(tft_, "Setup starten?", "WLAN-Verbindung wird getrennt", ui::kColorWarning);
   ui::drawButtonBar(tft_, kConfirmButtons, 2);
@@ -744,19 +856,63 @@ void App::handleTouch(const TouchState& touch) {
       break;
     }
     case Screen::Menu:
+      if (menuMore_) {
+        switch (ui::buttonAt(tft_, touch.x, touch.y, 3)) {
+          case 0:
+            menuMore_ = false;
+            ui::drawButtonBar(tft_, kMenuButtons, 4);
+            break;
+          case 1:
+            touch_.calibrate(rotation_);
+            showScreen(Screen::Menu);
+            break;
+          case 2:
+            restartWith(BootRequest::Diagnostics);
+          default:
+            break;
+        }
+        break;
+      }
       switch (ui::buttonAt(tft_, touch.x, touch.y, 4)) {
         case 0:
           showScreen(Screen::Radar);
           break;
         case 1:
-          showScreen(Screen::ConfirmSetup);
+          profileError_ = nullptr;
+          showScreen(Screen::Profiles);
           break;
         case 2:
-          touch_.calibrate(rotation_);
-          showScreen(Screen::Menu);
+          showScreen(Screen::ConfirmSetup);
           break;
         case 3:
-          restartWith(BootRequest::Diagnostics);
+          menuMore_ = true;
+          ui::drawButtonBar(tft_, kMenuMoreButtons, 3);
+          break;
+        default:
+          break;
+      }
+      break;
+    case Screen::Profiles: {
+      if (ui::buttonAt(tft_, touch.x, touch.y, 1) == 0) {
+        showScreen(Screen::Menu);
+        break;
+      }
+      if (touch.y < kProfileTop) break;
+      const uint16_t row = (touch.y - kProfileTop) / kProfileRowHeight;
+      if (row < profiles_.count && row != static_cast<uint16_t>(profiles_.active)) {
+        profileChoice_ = row;
+        showScreen(Screen::ConfirmProfile);
+      }
+      break;
+    }
+    case Screen::ConfirmProfile:
+      switch (ui::buttonAt(tft_, touch.x, touch.y, 2)) {
+        case 0:
+          activateProfile(profileChoice_);
+          break;
+        case 1:
+          showScreen(Screen::Profiles);
+          break;
         default:
           break;
       }
@@ -793,6 +949,7 @@ void App::handleRadarTouch(uint16_t x, uint16_t y) {
       showScreen(Screen::List);
       return;
     case 2:
+      menuMore_ = false;
       showScreen(Screen::Menu);
       return;
     case 3:

@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "../../HomeFlightTracker/src/app/NightSchedule.h"
+#include "../../HomeFlightTracker/src/app/ProfileSelect.h"
 #include "../../HomeFlightTracker/src/geo/Geo.h"
 #include "../../HomeFlightTracker/src/model/AircraftCategory.h"
 #include "../../HomeFlightTracker/src/model/FlightList.h"
@@ -269,6 +270,28 @@ void testAircraftCategory() {
   CHECK(strcmp(aircraft_category::name(99), "k. A.") == 0);
 }
 
+void testProfileSelect() {
+  using profile_select::choose;
+  using profile_select::VisibleNetwork;
+  const char* ssids[] = {"Zuhause", "Buero", "Laube"};
+  const bool all[] = {true, true, true};
+  const VisibleNetwork home[] = {{"Nachbar", -50}, {"Zuhause", -70}};
+  const VisibleNetwork office[] = {{"Buero", -60}, {"Gast", -40}};
+  const VisibleNetwork both[] = {{"Buero", -80}, {"Laube", -55}};
+  const VisibleNetwork none[] = {{"Fremd", -30}};
+  CHECK(choose(ssids, all, 3, 0, home, 2) == 0);     // aktives WLAN sichtbar
+  CHECK(choose(ssids, all, 3, 0, office, 2) == 1);   // anderes bekanntes WLAN
+  CHECK(choose(ssids, all, 3, 0, both, 2) == 2);     // mehrere: stärkstes Signal
+  CHECK(choose(ssids, all, 3, 1, both, 2) == 1);     // aktives sichtbar, auch wenn schwächer
+  CHECK(choose(ssids, all, 3, 0, none, 1) == 0);     // nichts Bekanntes: aktives bleibt
+  CHECK(choose(ssids, all, 3, 0, nullptr, 0) == 0);  // Suche ohne Ergebnis
+  const bool notLaube[] = {true, true, false};
+  CHECK(choose(ssids, notLaube, 3, 0, both, 2) == 1);  // unzulässiges Profil übersprungen
+  // Zwei Profile mit demselben WLAN: aktives bleibt
+  const char* same[] = {"Zuhause", "Zuhause"};
+  CHECK(choose(same, all, 2, 1, home, 2) == 1);
+}
+
 void testRangeQuota() {
   // 250 km bei 52,3° N: etwa 4,7° x 7,7° ≈ 36 Quadratgrad, also 2 Credits; 60 s Intervall passt noch.
   const geo::BoundingBox box = geo::boundingBox(kCenter, 250 * opensky::kQueryRadiusFactor);
@@ -292,6 +315,7 @@ int main() {
   testNightSchedule();
   testUnits();
   testAircraftCategory();
+  testProfileSelect();
   testRangeQuota();
   printf("%d Prüfungen, %d Fehler\n", checks, failures);
   return failures == 0 ? 0 : 1;

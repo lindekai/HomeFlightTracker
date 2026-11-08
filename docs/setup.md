@@ -89,14 +89,23 @@ In der Nachtruhe weckt eine Berührung das Gerät. Es startet neu, verbindet sic
 - Im Heimnetz `http://<IP-Adresse>` oder `http://homeflighttracker.local` öffnen. Die IP-Adresse steht im Statusbildschirm. mDNS funktioniert nicht in jedem Netz und auf jedem Gerät; die IP-Adresse geht immer.
 - Anmelden mit Benutzer `admin` und dem Geräte-Passwort.
 - Leere Passwort- und Secret-Felder bedeuten „unverändert“. Gespeicherte Geheimnisse werden nie angezeigt.
-- Neues WLAN, wenn das alte nicht mehr erreichbar ist: im Statusbildschirm **Setup** → **Ja**.
+- Neues WLAN, wenn das alte nicht mehr erreichbar ist: im Menü **Setup** → **Ja**.
+
+### Profile (WLAN + Standort)
+
+- Beim ersten Start mit Firmware 0.8.0 wird aus der vorhandenen Einstellung automatisch Profil 1 (Name = Ortsbezeichnung).
+- Weitere Profile (höchstens 5) im Abschnitt **Profile** der Weboberfläche anlegen: WLAN und Standort in den Abschnitten 1 und 2 eintragen, einen Namen vergeben, **Als neues Profil speichern**. Das aktive Profil bleibt dabei unverändert. Ein leeres Passwortfeld übernimmt das gespeicherte Passwort eines Profils mit demselben WLAN.
+- **Speichern & neu starten** ändert immer das aktive Profil.
+- Wechsel am Gerät: **Menü → Profil**, Profil antippen, **Ja**. In der Weboberfläche: **Aktivieren**.
+- Automatische Wahl beim Start (bei mindestens 2 Profilen, nicht nach dem Tiefschlaf): Das Gerät sucht 2–3 s nach WLANs. Ist das WLAN des aktiven Profils zu sehen, bleibt es aktiv; sonst wird das Profil mit dem stärksten sichtbaren WLAN aktiv. Ohne bekanntes WLAN bleibt das aktive Profil.
+- Jedes Profil wird beim Anlegen und vor dem Wechsel gegen das OpenSky-Kontingent geprüft (Reichweite und Intervall gelten für alle Profile gemeinsam).
 
 ## 6. Recovery
 
 | Problem | Lösung |
 |---|---|
 | Touch reagiert falsch oder Schaltflächen sind nicht treffbar | Beim Start (2,5 s lang) das Display kurz antippen: Neukalibrierung. |
-| Geräte-Passwort vergessen oder Gerät unbrauchbar konfiguriert | **Werksreset:** beim Start das Display antippen und **8 Sekunden gedrückt halten** (Countdown). Löscht alle Einstellungen inkl. Kalibrierung. Loslassen vorher bricht ab. |
+| Geräte-Passwort vergessen oder Gerät unbrauchbar konfiguriert | **Werksreset:** beim Start das Display antippen und **8 Sekunden gedrückt halten** (Countdown). Löscht alle Einstellungen inkl. Profile und Kalibrierung. Loslassen vorher bricht ab. |
 | Diagnose (Testbild, Touch-Test, Heap) | Statusbildschirm → **Diagnose**. Zurück über Info → **Neustart**. |
 
 Der Werksreset ist absichtlich nur lokal am Gerät auslösbar und nicht über das Netz.

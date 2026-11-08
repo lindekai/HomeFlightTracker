@@ -25,6 +25,7 @@ button:disabled{opacity:.5}
 .hint{font-size:12.5px;color:var(--muted);margin-top:6px}.ok{color:var(--ok)}.err{color:var(--err)}
 .box{margin-top:10px;padding:10px;border-radius:6px;border:1px solid var(--line);font-size:13px}
 .status{font-size:13px;color:var(--muted)}
+.prof{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}.prof div{flex:1;min-width:0}.prof small{display:block;color:var(--muted);overflow:hidden;text-overflow:ellipsis}.prof button{padding:6px 10px}
 </style></head><body>
 <header><b>HomeFlightTracker</b><div id="mode">Konfiguration</div></header>
 <main>
@@ -45,6 +46,14 @@ button:disabled{opacity:.5}
 <div><label for="lon">Länge (−180 … 180)</label><input id="lon" inputmode="decimal" placeholder="z. B. 13.1000"></div></div>
 <label for="lname">Bezeichnung (optional)</label><input id="lname" maxlength="47" placeholder="z. B. Zuhause">
 <div class="hint">Dezimalgrad mit Punkt. Koordinaten z. B. per Langdruck in einer Karten-App ermitteln.</div>
+</section>
+
+<section id="profsec"><h2>Profile (WLAN + Standort)</h2>
+<div id="profiles"></div>
+<label for="pname">Name für ein neues Profil</label>
+<div class="row"><input id="pname" maxlength="24" placeholder="z. B. Büro"><button id="padd" type="button" style="flex:0 0 auto">Als neues Profil speichern</button></div>
+<div id="pmsg" class="hint"></div>
+<div class="hint">Ein neues Profil übernimmt WLAN und Standort aus 1 und 2 (leeres Passwort = gespeichertes Passwort desselben WLANs). Beim Start wählt das Gerät das Profil, dessen WLAN es empfängt; am Gerät: Menü → Profil.</div>
 </section>
 
 <section><h2>3 · OpenSky-Zugang</h2>
@@ -105,7 +114,23 @@ async function load(){
  $('intv').value=st.intervalS;setRange(st.rangeKm);
  const p=st.power;$('dimafter').value=p.dimAfterS;$('dimpct').value=p.dimPercent;$('offafter').value=p.offAfterMin;
  $('nighton').checked=p.nightEnabled;$('nightstart').value=hm(p.nightStartMin);$('nightend').value=hm(p.nightEndMin);
+ showProfiles();
 }
+function pmsg(t,ok){$('pmsg').className='hint '+(ok?'ok':'err');$('pmsg').textContent=t}
+function showProfiles(){const pr=st.profiles,box=$('profiles');box.innerHTML='';
+ $('profsec').style.display=pr.items.length?'':'none';
+ pr.items.forEach((p,i)=>{const row=document.createElement('div');row.className='prof';
+  const d=document.createElement('div');const b=document.createElement('b');b.textContent=p.name+(i===pr.active?' (aktiv)':'');
+  const s=document.createElement('small');s.textContent=p.ssid+' · '+(p.location||'ohne Bezeichnung');d.append(b,s);row.appendChild(d);
+  if(i!==pr.active){[['Aktivieren','activate'],['Löschen','delete']].forEach(([t,a])=>{const btn=document.createElement('button');btn.type='button';btn.textContent=t;
+   btn.onclick=async()=>{if(a==='delete'&&!confirm('Profil „'+p.name+'“ löschen?'))return;const r=await api('/api/profiles',{action:a,index:i});
+    if(!r.ok){pmsg(r.error||'Fehler');return}if(a==='activate'){pmsg('Profil aktiviert. Das Gerät startet neu.',true);return}await load();pmsg('Gelöscht.',true)};row.appendChild(btn)})}
+  box.appendChild(row)});
+ $('padd').disabled=pr.items.length>=pr.max}
+$('padd').onclick=async()=>{const lat=parseFloat($('lat').value),lon=parseFloat($('lon').value);
+ const r=await api('/api/profiles',{action:'add',name:$('pname').value.trim(),wifiSsid:$('ssid').value.trim(),wifiPassword:$('wpass').value,wifiOpen:$('wopen').checked,
+  lat:isNaN(lat)?null:lat,lon:isNaN(lon)?null:lon,locationName:$('lname').value.trim()});
+ if(!r.ok){pmsg(r.error||'Fehler');return}$('pname').value='';await load();pmsg('Profil gespeichert. Aktiv bleibt das bisherige Profil.',true)};
 function authenticated(){if($('cclear').checked)return false;return !!($('cid').value.trim()&&($('csec').value||st.opensky.hasSecret))}
 let et;function estimate(){clearTimeout(et);et=setTimeout(async()=>{
  const lat=parseFloat($('lat').value),lon=parseFloat($('lon').value);

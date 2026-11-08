@@ -8,6 +8,20 @@ Format angelehnt an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 - MIT-Lizenz hinzugefügt.
 
+### Profile aus WLAN und Standort (Firmware 0.8.0)
+
+#### Hinzugefügt
+
+- Bis zu 5 Profile (WLAN + Standort): Anlegen, Löschen und Aktivieren in der Weboberfläche, Wechsel am Gerät über Menü → Profil.
+- Automatische Profilwahl beim Start nach den sichtbaren WLANs (aktives bevorzugt, sonst stärkstes Signal).
+- Migration: Die bestehende Einstellung wird beim ersten Start zu Profil 1.
+- Host-Tests für die Profilwahl (insgesamt 127 Prüfungen).
+
+#### Geändert
+
+- Menü-Schaltflächen: Radar, Profil, Setup, Mehr (Mehr → Kalibr., Diag.).
+- Werksreset löscht auch die Profile.
+
 ### Symbole nach Flugzeugkategorie (Firmware 0.7.0)
 
 #### Hinzugefügt

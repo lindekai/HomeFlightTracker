@@ -18,11 +18,12 @@ Eigenständiges Tisch- und Wandgerät, das Flugbewegungen rund um einen frei wä
 | Radar | Flugzeug antippen = auswählen (Kurzinfo); Kurzinfo oder erneutes Antippen = Details; überlappende Symbole: erneut antippen wechselt zum nächsten. **+** / **−** = hinein-/herauszoomen (10/25/50/100/250 km) |
 | Details | Werte aus OpenSky mit Einheiten; „–“ = nicht verfügbar |
 | Liste | nach Entfernung sortiert, Zeile antippen = Details, blättern mit Zurück/Weiter |
-| Menü | WLAN, IP-Adresse, Standort, OpenSky-Status, letzter Abruf, Credits; Setup, Kalibrierung, Diagnose |
+| Menü | WLAN, IP-Adresse, Standort, OpenSky-Status, letzter Abruf, Credits; **Profil** (WLAN + Standort wechseln), Setup, **Mehr** → Kalibrierung, Diagnose |
 
 ## Funktionen (Ziel des MVP)
 
 - **Radar** mit Norden oben, Entfernungsringen und einstellbarer Reichweite (10, 25, 50, 100 oder 250 km). Die Symbole zeigen in Bewegungsrichtung und unterscheiden Verkehrsflugzeug, Kleinflugzeug und Hubschrauber.
+- **Profile** aus WLAN und Standort (bis zu 5, z. B. „Zuhause“, „Büro“): Anlegen in der Weboberfläche, Wechsel am Gerät; beim Start wählt das Gerät automatisch das Profil, dessen WLAN es empfängt.
 - **Antippen** eines Flugzeugs öffnet die Details: Callsign, ICAO24, Herkunftsland, Höhe, Geschwindigkeit, Kurs, Steigrate, Entfernung, letzter Kontakt.
 - **Flugliste**, sortiert nach Entfernung.
 - **Einrichtung ohne PC:** geschützter Setup-Access-Point mit Captive Portal für WLAN, Standort (Ortsname oder Koordinaten), OpenSky-Zugang, Reichweite und Abrufintervall.

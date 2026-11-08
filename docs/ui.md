@@ -55,7 +55,7 @@ Das Portal ist in fünf Schritte gegliedert: WLAN, Standort (Suche oder Koordina
 
 ## Umsetzungsstand (M4)
 
-- **Radar, Details, Liste** wie in den Mockups. Das frühere Statusbild ist jetzt das **Menü**: WLAN, IP-Adresse, Standort, OpenSky-Status, letzter Abruf, Credits und die Schaltflächen Radar, Setup, Kalibr. und Diag.
+- **Radar, Details, Liste** wie in den Mockups. Das frühere Statusbild ist jetzt das **Menü**: WLAN, IP-Adresse, Standort, OpenSky-Status, letzter Abruf, Credits und die Schaltflächen Radar, Profil, Setup und Mehr. „Mehr“ ersetzt die Leiste durch Zurück, Kalibr. und Diag., damit jede Schaltfläche groß genug bleibt.
 - **Zoom:** **+** = hineinzoomen (kleinerer Radius), **−** = herauszoomen. Ein größerer Radius wird erst beim nächsten regulären Abruf mit Daten gefüllt; der Hinweis erscheint in der Fußzeile. Die Reichweite wird gespeichert.
 - **Kurzinfo:** Ohne Auswahl trägt automatisch das nächstgelegene Flugzeug im Radius eine neutrale Kurzinfo (Callsign, Höhe bzw. „am Boden“, Entfernung). Ein ausgewähltes Flugzeug wird orange hervorgehoben und trägt die Kurzinfo stattdessen. Antippen einer Kurzinfo öffnet die Details.
 - **Auswahl:**
@@ -70,6 +70,7 @@ Das Portal ist in fünf Schritte gegliedert: WLAN, Standort (Suche oder Koordina
 - **Abweichungen vom Mockup:**
   - Statt Pfeiltasten heißen die Schaltflächen der Liste „Zurück“ und „Weiter“.
   - Die Ortssuche im Portal folgt in M5.
+- **Profile:** Menü → Profil zeigt bis zu 5 Profile (Name, WLAN · Ort), das aktive orange hinterlegt. Antippen eines anderen Profils fragt „Profil wechseln?“ mit Ja/Nein; Ja übernimmt WLAN und Standort und startet neu. Ein unzulässiges Profil (z. B. Kontingent am anderen Standort) wird mit Grund abgelehnt. Neue Profile entstehen in der Weboberfläche.
 - **Energie:** Gedimmtes oder dunkles Display wird durch die erste Berührung nur geweckt. In der Nachtruhe zeigt die Fußzeile „Nachtruhe · Tiefschlaf in … s“; das Menü zeigt das Zeitfenster.
 - **Ausrichtung:** Die Oberfläche ist für das Hochformat (Rotation 0) ausgelegt.
 

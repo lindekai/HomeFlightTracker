@@ -8,5 +8,5 @@ OUT="${TMPDIR:-/tmp}/homeflighttracker-hosttests"
 ARDUINOJSON="${ARDUINOJSON:-$HOME/Documents/Arduino/libraries/ArduinoJson/src}"
 c++ -std=c++17 -Wall -Wextra -Werror -O1 -I"$ARDUINOJSON" -o "$OUT" \
   test_main.cpp "$SRC/geo/Geo.cpp" "$SRC/opensky/Quota.cpp" "$SRC/opensky/StatesParser.cpp" \
-  "$SRC/model/FlightList.cpp" "$SRC/app/NightSchedule.cpp"
+  "$SRC/model/FlightList.cpp" "$SRC/app/NightSchedule.cpp" "$SRC/app/ProfileSelect.cpp"
 "$OUT"

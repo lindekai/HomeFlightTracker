@@ -5,6 +5,7 @@
 #include <TFT_eSPI.h>
 
 #include "../config/AppConfig.h"
+#include "../config/Profiles.h"
 #include "../model/FlightList.h"
 #include "../net/SetupPortal.h"
 #include "../net/WifiManager.h"
@@ -22,7 +23,7 @@ class App {
 
  private:
   enum class Mode : uint8_t { Setup, Normal };
-  enum class Screen : uint8_t { Radar, Details, List, Menu, ConfirmSetup, Setup, Message };
+  enum class Screen : uint8_t { Radar, Details, List, Menu, Profiles, ConfirmProfile, ConfirmSetup, Setup, Message };
 
   static constexpr uint32_t kRecoveryWindowMs = 2500;
   static constexpr uint32_t kFactoryResetHoldMs = 8000;
@@ -31,6 +32,8 @@ class App {
   static constexpr uint32_t kRestartDelayMs = 2000;
   static constexpr uint32_t kNoticeDurationMs = 4000;
   static constexpr uint8_t kListRowsPerPage = 7;
+  static constexpr int16_t kProfileTop = 48;
+  static constexpr int16_t kProfileRowHeight = 40;
 
   // Startbildschirm mit Recovery: kurz antippen = Touch neu kalibrieren,
   // 8 s halten = Werksreset. Liefert true, wenn neu kalibriert werden soll.
@@ -39,6 +42,8 @@ class App {
 
   void startSetupMode();
   void startNormalMode();
+  // Beim Start: bekanntes WLAN suchen und ggf. auf dessen Profil wechseln (nicht nach dem Tiefschlaf).
+  void selectProfileAtBoot();
 
   void showScreen(Screen screen);
   void refresh();
@@ -56,6 +61,8 @@ class App {
   void drawSetupScreen();
   void updateSetupScreen();
   void drawConfirmSetupScreen();
+  void drawProfiles();
+  void activateProfile(uint8_t index);
 
   void handleTouch(const TouchState& touch);
   void handleRadarTouch(uint16_t x, uint16_t y);
@@ -82,6 +89,10 @@ class App {
   bool detailInData_ = false;
   bool detailAviationUnits_ = false;  // Detailseite 2: ft, FL, kt, ft/min, NM
   uint8_t listPage_ = 0;
+  bool menuMore_ = false;      // Menü zeigt „Zurück“, „Kalibr.“, „Diag.“
+  ProfileStore profiles_;      // für Profilliste und Bestätigung
+  uint8_t profileChoice_ = 0;
+  const char* profileError_ = nullptr;
   RadarView::DataState lastDataState_ = RadarView::DataState::Waiting;
   char notice_[48] = "";
   uint32_t noticeUntilMs_ = 0;
