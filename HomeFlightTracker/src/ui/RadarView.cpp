@@ -3,6 +3,7 @@
 #include <math.h>
 #include <string.h>
 
+#include "../model/AircraftCategory.h"
 #include "AircraftIcons.h"
 #include "Widgets.h"
 
@@ -62,16 +63,17 @@ void RadarView::draw(const FlightList& flights, const Info& info) {
         continue;  // zuletzt zeichnen, damit es oben liegt
       }
       const uint16_t color = aircraftColor(aircraft, info);
-      drawAircraft(canvas, x, y + oy, color == ui::kColorStale ? NAN : aircraft.trackDeg, color);
+      drawAircraft(canvas, x, y + oy, color == ui::kColorStale ? NAN : aircraft.trackDeg, aircraft.category, color);
     }
     if (labelIndex >= 0) {
       const Aircraft& aircraft = flights[labelIndex];
       if (info.labelIsSelection) {
         canvas.drawCircle(labelX, labelY + oy, 12, ui::kColorSelected);
-        drawAircraft(canvas, labelX, labelY + oy, aircraft.trackDeg, ui::kColorSelected);
+        drawAircraft(canvas, labelX, labelY + oy, aircraft.trackDeg, aircraft.category, ui::kColorSelected);
       } else {
         const uint16_t color = aircraftColor(aircraft, info);
-        drawAircraft(canvas, labelX, labelY + oy, color == ui::kColorStale ? NAN : aircraft.trackDeg, color);
+        drawAircraft(canvas, labelX, labelY + oy, color == ui::kColorStale ? NAN : aircraft.trackDeg,
+                     aircraft.category, color);
       }
       drawLabel(canvas, oy, aircraft, labelX, labelY, info.labelIsSelection);
     }
@@ -120,7 +122,8 @@ void RadarView::drawBackground(TFT_eSPI& canvas, int16_t oy, const Info& info, u
   canvas.drawFastVLine(kCenter, oy + kCenter - 4, 9, ui::kColorText);
 }
 
-void RadarView::drawAircraft(TFT_eSPI& canvas, int16_t x, int16_t y, float trackDeg, uint16_t color) {
+void RadarView::drawAircraft(TFT_eSPI& canvas, int16_t x, int16_t y, float trackDeg, uint8_t category,
+                             uint16_t color) {
   if (isnan(trackDeg)) {
     // Ohne Kursangabe kein Richtungssymbol, sondern ein Kreis.
     canvas.fillCircle(x, y, 3, color);
@@ -128,7 +131,8 @@ void RadarView::drawAircraft(TFT_eSPI& canvas, int16_t x, int16_t y, float track
   }
   // Vorgedrehte Bitmap der nächstgelegenen Richtung (15°-Schritte), Randpixel mit dem Hintergrund gemischt.
   const uint8_t step = static_cast<uint8_t>(lroundf(trackDeg / (360.0f / icons::kAircraftSteps))) % icons::kAircraftSteps;
-  const uint8_t* bitmap = icons::kAircraft[step];
+  const uint8_t shape = static_cast<uint8_t>(aircraft_category::shapeFor(category));
+  const uint8_t* bitmap = icons::kAircraft[shape][step];
   const int16_t left = x - icons::kAircraftSize / 2;
   const int16_t top = y - icons::kAircraftSize / 2;
   uint16_t blended[4] = {0, canvas.alphaBlend(85, color, ui::kColorBackground),

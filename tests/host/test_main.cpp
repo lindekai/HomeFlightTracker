@@ -7,6 +7,7 @@
 
 #include "../../HomeFlightTracker/src/app/NightSchedule.h"
 #include "../../HomeFlightTracker/src/geo/Geo.h"
+#include "../../HomeFlightTracker/src/model/AircraftCategory.h"
 #include "../../HomeFlightTracker/src/model/FlightList.h"
 #include "../../HomeFlightTracker/src/model/Units.h"
 #include "../../HomeFlightTracker/src/opensky/Quota.h"
@@ -172,6 +173,14 @@ void testParser() {
   CHECK(list[0].timePosition == 0 && list[0].lastContact == 5);
   CHECK(list[0].onGround);
   CHECK(list[0].positionSource == 255);
+  CHECK(list[0].category == 0);  // ohne extended=1 kein Feld 17
+
+  // extended=1: Kategorie 8 (Hubschrauber) in Feld 17
+  const char* extended =
+      "{\"time\":7,\"states\":[[\"3dd123\",\"CHX12\",\"Germany\",1,1,13.1,52.31,300,false,40,90,0,null,"
+      "320,\"0020\",false,0,8]]}";
+  CHECK(parse(extended, list, stats));
+  CHECK(list.size() == 1 && list[0].category == 8);
 
   // Fehlende Koordinaten, außerhalb des Radius, doppelte Callsigns
   const char* mixed =
@@ -248,6 +257,18 @@ void testUnits() {
   CHECK(units::flightLevel(NAN) == -1);
 }
 
+void testAircraftCategory() {
+  using aircraft_category::Shape;
+  using aircraft_category::shapeFor;
+  CHECK(shapeFor(8) == Shape::Helicopter);
+  CHECK(shapeFor(2) == Shape::Light && shapeFor(9) == Shape::Light && shapeFor(12) == Shape::Light);
+  CHECK(shapeFor(0) == Shape::Airliner && shapeFor(1) == Shape::Airliner && shapeFor(6) == Shape::Airliner);
+  CHECK(shapeFor(3) == Shape::Airliner && shapeFor(255) == Shape::Airliner);
+  CHECK(strcmp(aircraft_category::name(8), "Hubschrauber") == 0);
+  CHECK(strcmp(aircraft_category::name(0), "k. A.") == 0);
+  CHECK(strcmp(aircraft_category::name(99), "k. A.") == 0);
+}
+
 void testRangeQuota() {
   // 250 km bei 52,3° N: etwa 4,7° x 7,7° ≈ 36 Quadratgrad, also 2 Credits; 60 s Intervall passt noch.
   const geo::BoundingBox box = geo::boundingBox(kCenter, 250 * opensky::kQueryRadiusFactor);
@@ -270,6 +291,7 @@ int main() {
   testFlightList();
   testNightSchedule();
   testUnits();
+  testAircraftCategory();
   testRangeQuota();
   printf("%d Prüfungen, %d Fehler\n", checks, failures);
   return failures == 0 ? 0 : 1;

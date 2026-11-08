@@ -47,7 +47,7 @@ class RadarView {
 
   bool project(const Aircraft& aircraft, uint16_t rangeKm, int16_t& x, int16_t& y) const;
   void drawBackground(TFT_eSPI& canvas, int16_t oy, const Info& info, uint16_t count);
-  void drawAircraft(TFT_eSPI& canvas, int16_t x, int16_t y, float trackDeg, uint16_t color);
+  void drawAircraft(TFT_eSPI& canvas, int16_t x, int16_t y, float trackDeg, uint8_t category, uint16_t color);
   void drawLabel(TFT_eSPI& canvas, int16_t oy, const Aircraft& aircraft, int16_t x, int16_t y, bool selected);
   uint16_t aircraftColor(const Aircraft& aircraft, const Info& info) const;
 

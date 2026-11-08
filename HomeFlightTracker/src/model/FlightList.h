@@ -20,6 +20,7 @@ struct Aircraft {
   int32_t lastContact;      // Unix-Zeit des letzten Kontakts, 0 = unbekannt
   bool onGround;
   uint8_t positionSource;   // 0 ADS-B, 1 ASTERIX, 2 MLAT, 3 FLARM, 255 = unbekannt
+  uint8_t category;         // ADS-B-Emitterkategorie (0 = keine Angabe), siehe AircraftCategory.h
   float distanceKm;         // vom Radarzentrum
   float bearingDeg;         // vom Radarzentrum, 0° = Nord
 };

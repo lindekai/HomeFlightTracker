@@ -120,8 +120,9 @@ OpenSkyClient::Result OpenSkyClient::fetchStates(const geo::BoundingBox& box, ge
                                                  FlightList& out, opensky::ParseStats& stats) {
   // Grenzen leicht nach außen runden, damit kein Randbereich verloren geht.
   char url[200];
-  snprintf(url, sizeof(url), "%s?lamin=%.4f&lomin=%.4f&lamax=%.4f&lomax=%.4f", kStatesUrl, box.latMin - 0.0001,
-           box.lonMin - 0.0001, box.latMax + 0.0001, box.lonMax + 0.0001);
+  // extended=1 liefert zusätzlich die Flugzeugkategorie (Feld 17), ohne Mehrkosten an Credits.
+  snprintf(url, sizeof(url), "%s?lamin=%.4f&lomin=%.4f&lamax=%.4f&lomax=%.4f&extended=1", kStatesUrl,
+           box.latMin - 0.0001, box.lonMin - 0.0001, box.latMax + 0.0001, box.lonMax + 0.0001);
 
   NetworkClientSecure tls;
   configureTls(tls);

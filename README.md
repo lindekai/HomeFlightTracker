@@ -22,7 +22,7 @@ Eigenständiges Tisch- und Wandgerät, das Flugbewegungen rund um einen frei wä
 
 ## Funktionen (Ziel des MVP)
 
-- **Radar** mit Norden oben, Entfernungsringen und einstellbarer Reichweite (10, 25, 50, 100 oder 250 km). Die Flugzeugsymbole zeigen in Bewegungsrichtung.
+- **Radar** mit Norden oben, Entfernungsringen und einstellbarer Reichweite (10, 25, 50, 100 oder 250 km). Die Symbole zeigen in Bewegungsrichtung und unterscheiden Verkehrsflugzeug, Kleinflugzeug und Hubschrauber.
 - **Antippen** eines Flugzeugs öffnet die Details: Callsign, ICAO24, Herkunftsland, Höhe, Geschwindigkeit, Kurs, Steigrate, Entfernung, letzter Kontakt.
 - **Flugliste**, sortiert nach Entfernung.
 - **Einrichtung ohne PC:** geschützter Setup-Access-Point mit Captive Portal für WLAN, Standort (Ortsname oder Koordinaten), OpenSky-Zugang, Reichweite und Abrufintervall.

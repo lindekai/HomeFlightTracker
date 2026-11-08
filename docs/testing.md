@@ -68,13 +68,14 @@ Messung vom 2026-11-08 ohne aktives WLAN. **Folgerung:** Ein 16-Bit-Vollsprite f
 tests/host/run.sh
 ```
 
-Stand: 109 Prüfungen, 0 Fehler. Geprüft werden:
+Stand: 119 Prüfungen, 0 Fehler. Geprüft werden:
 
 - Distanz: Nullstrecke, 1° Breite, Berlin–München, Symmetrie
 - Peilung: Nord, Süd, Ost, West, Nordwest, Wertebereich
 - Bounding Box: 100 km bei 52,3° N, Punkte auf dem Kreis, Datumsgrenze, Polnähe, hohe Breiten
 - Gültigkeit von Koordinaten, Normalisierung des Längengrads
 - Credits je Flächenstufe, Tagesverbrauch, kürzestes zulässiges Intervall (authentifiziert und anonym), Reichweiten 10 und 250 km
+- Flugzeugkategorie: Feld 17 mit und ohne `extended=1`, Zuordnung zu den Symbolformen, Klartext
 - Einheiten: Fuß, Knoten, ft/min, Seemeilen, Flugfläche (inklusive fehlender und negativer Höhe)
 - Parser:
   - vollständiger Datensatz
@@ -146,6 +147,7 @@ Hinweis: Das Öffnen der seriellen Schnittstelle setzt das Gerät über den USB-
 | 4.8 | Umlaute | „Menü“, „Höhe“, „Credits übrig“, „Nächster Abruf“ korrekt lesbar | ☐ |
 | 4.9 | Keine Flugzeuge | leeres Radar mit „0 Flugz.“, Liste „Keine Flugzeuge im Radius“ | ✅ nachts beobachtet (seriell) |
 | 4.10 | 250 km | Abruf mit 2 Credits (Menü: Credits übrig sinkt um 2), Dauer und Heap (min) im Menü unauffällig | ☐ |
+| 4.11 | Symbole | Hubschrauber (z. B. Rettungs- oder Polizeihubschrauber) mit Rotorkreis, Leicht-/Segelflugzeuge mit geraden Flügeln; Kategorie in den Details stimmt; ohne Angabe „k. A.“ und Verkehrsflugzeug-Symbol | ☐ |
 
 ## Energiesparen
 

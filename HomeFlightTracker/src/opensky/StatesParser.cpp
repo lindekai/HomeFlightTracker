@@ -22,6 +22,7 @@ constexpr size_t kVerticalRate = 11;
 constexpr size_t kGeoAltitude = 13;
 constexpr size_t kSquawk = 14;
 constexpr size_t kPositionSource = 16;
+constexpr size_t kCategory = 17;  // nur mit extended=1
 constexpr size_t kMinimumFields = 17;
 
 void skipWhitespace(opensky::JsonByteSource& in) {
@@ -98,6 +99,7 @@ bool toAircraft(JsonArrayConst state, geo::LatLon center, Aircraft& out) {
   aircraft.lastContact = state[kLastContact] | 0;
   aircraft.onGround = state[kOnGround] | false;
   aircraft.positionSource = state[kPositionSource].is<int>() ? state[kPositionSource].as<uint8_t>() : 255;
+  aircraft.category = state[kCategory].is<int>() ? state[kCategory].as<uint8_t>() : 0;
   aircraft.distanceKm = static_cast<float>(geo::distanceKm(center, position));
   aircraft.bearingDeg = static_cast<float>(geo::initialBearingDeg(center, position));
   out = aircraft;

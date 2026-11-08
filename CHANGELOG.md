@@ -8,6 +8,14 @@ Format angelehnt an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 - MIT-Lizenz hinzugefügt.
 
+### Symbole nach Flugzeugkategorie (Firmware 0.7.0)
+
+#### Hinzugefügt
+
+- Eigene Symbole für Hubschrauber (Rotorkreis) und Kleinflugzeuge (Leicht-, Segel-, Ultraleichtflugzeuge); Grundlage ist die ADS-B-Kategorie, die mit `extended=1` ohne Mehrkosten abgefragt wird.
+- Kategorie im Klartext in den Details.
+- Host-Tests für Feld 17 und die Zuordnung der Kategorien (insgesamt 119 Prüfungen).
+
 ### Luftfahrt-Einheiten und Reichweite (Firmware 0.6.0)
 
 #### Hinzugefügt

@@ -6,6 +6,7 @@
 
 #include "../config/HardwareSettings.h"
 #include "../diag/HeapReport.h"
+#include "../model/AircraftCategory.h"
 #include "../model/Units.h"
 #include "../net/TimeSync.h"
 #include "../opensky/Quota.h"
@@ -480,9 +481,12 @@ void App::drawDetails() {
   updateDetailsAge();
 
   tft_.drawFastHLine(ui::kMargin, 244, tft_.width() - 2 * ui::kMargin, ui::kColorCross);
+  tft_.setTextColor(ui::kColorMuted, ui::kColorBackground);
+  ui::drawText(tft_, "Kategorie", ui::kMargin, 247);
+  tft_.setTextColor(ui::kColorText, ui::kColorBackground);
+  ui::drawText(tft_, aircraft_category::name(a.category), tft_.width() - ui::kMargin, 247, 2, true);
   tft_.setTextColor(ui::kColorStale, ui::kColorBackground);
-  ui::drawText(tft_, "Typ, Registrierung, Start/Ziel:", ui::kMargin, 248);
-  ui::drawText(tft_, "von OpenSky nicht geliefert", ui::kMargin, 262);
+  ui::drawText(tft_, "Typ, Start/Ziel: nicht geliefert", ui::kMargin, 261);
   ui::drawButtonBar(tft_, detailAviationUnits_ ? kDetailButtonsAviation : kDetailButtons, 3);
 }
 

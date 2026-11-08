@@ -4,7 +4,9 @@ Stand der Prüfung: 2026-11-08. Quellen stehen am Ende des Dokuments.
 
 ## Endpunkt
 
-`GET https://opensky-network.org/api/states/all?lamin=…&lomin=…&lamax=…&lomax=…`
+`GET https://opensky-network.org/api/states/all?lamin=…&lomin=…&lamax=…&lomax=…&extended=1`
+
+`extended=1` hängt an jeden State-Vektor die ADS-B-Emitterkategorie als Feld 17 an (0 = keine Angabe, 2 = leicht, 8 = Drehflügler …). Die Credits ändern sich dadurch nicht. Fehlt das Feld, gilt Kategorie 0.
 
 Die Abfrage wird auf eine Bounding Box um den Standort begrenzt, die aus Radius und Puffer berechnet wird. Nach dem Laden wird zusätzlich die tatsächliche Entfernung geprüft.
 

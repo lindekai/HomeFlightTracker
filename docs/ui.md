@@ -33,6 +33,8 @@ Die Details haben zwei Seiten, umgeschaltet mit der dritten Schaltfläche („Fu
 | Kurs, Peilung, Squawk, Letzter Kontakt | gleich | gleich |
 | Quelle (ADS-B, MLAT …) | ja | – |
 
+Unter der Tabelle steht auf beiden Seiten die Kategorie im Klartext (z. B. „Hubschrauber“, „Schwer (>136 t)“, ohne Angabe „k. A.“).
+
 ### Liste
 
 Die Liste ist nach Entfernung sortiert und zeigt sieben Zeilen pro Seite, die mit ▲ / ▼ geblättert werden. Antippen einer Zeile öffnet die Details.
@@ -60,7 +62,10 @@ Das Portal ist in fünf Schritte gegliedert: WLAN, Standort (Suche oder Koordina
   - Antippen wählt das nächstgelegene Symbol im Umkreis von 20 px; Antippen einer leeren Stelle hebt die Auswahl auf.
   - Bei Überlappung wechselt erneutes Antippen zum nächsten Kandidaten.
   - Ist nur ein Kandidat vorhanden und bereits ausgewählt, öffnen sich die Details. Das gilt auch beim Antippen der Kurzinfo.
-- **Flugzeugsymbol:** 17 × 17 px, vorgedreht in 24 Richtungen (15°-Schritte) mit Kantenglättung (2 Bit Deckung, Randpixel mit dem Hintergrund gemischt). Die Bitmaps erzeugt `tools/gen_icons.py` aus einer Vektor-Silhouette; das Gerät dreht nicht selbst. Flugzeuge am Boden: blaugrau, Kurzinfo „am Boden“ statt Höhe.
+- **Flugzeugsymbol:** 17 × 17 px, vorgedreht in 24 Richtungen (15°-Schritte) mit Kantenglättung (2 Bit Deckung, Randpixel mit dem Hintergrund gemischt). Die Bitmaps erzeugt `tools/gen_icons.py` aus Vektor-Silhouetten; das Gerät dreht nicht selbst. Die Form richtet sich nach der ADS-B-Kategorie (`src/model/AircraftCategory.h`):
+  - **Hubschrauber** (Rumpf, Heckausleger, Rotorkreis): Kategorie 8
+  - **Kleinflugzeug** (gerade Flügel, Propeller): Leichtflugzeug (2), Segelflugzeug (9), Ultraleicht (12)
+  - **Verkehrsflugzeug** (Pfeilflügel): alle übrigen und Flugzeuge ohne Kategorie. Viele Transponder senden keine Kategorie. Flugzeuge am Boden: blaugrau, Kurzinfo „am Boden“ statt Höhe.
 - **Ringbeschriftung:** Nur der halbe Radius ist am Ring beschriftet; der volle Radius steht oben rechts.
 - **Abweichungen vom Mockup:**
   - Statt Pfeiltasten heißen die Schaltflächen der Liste „Zurück“ und „Weiter“.
