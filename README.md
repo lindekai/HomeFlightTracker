@@ -3,6 +3,11 @@
 Eigenständiges Tisch- und Wandgerät, das Flugbewegungen rund um einen frei wählbaren Standort als Radar auf einem 2,4-Zoll-Touchdisplay anzeigt. Die Positionsdaten stammen vom [OpenSky Network](https://opensky-network.org).
 
 <p align="center">
+  <img src="docs/images/homeflighttracker-geraet.jpg" width="360" alt="HomeFlightTracker im Gehäuse mit Radaransicht und beschriftetem Flugzeug">
+</p>
+<p align="center"><sub>Das Gerät im Betrieb: Radar mit 25 km Reichweite, Kurzinfo zum ausgewählten Flugzeug.</sub></p>
+
+<p align="center">
   <img src="docs/mockups/radar.svg" width="240" alt="Radaransicht">
   <img src="docs/mockups/details.svg" width="240" alt="Flugdetails">
   <img src="docs/mockups/list.svg" width="240" alt="Flugliste">
@@ -75,7 +80,7 @@ HomeFlightTracker/
 │       ├── net/                  WLAN, NTP, Setup-Portal, Weboberfläche
 │       ├── opensky/              OAuth2, Abruf, Streaming-Parser, Kontingent, Hintergrund-Task
 │       └── ui/                   Radar, Bedienelemente, Text mit Umlauten, Touch
-├── docs/                         Projektdokumentation
+├── docs/                         Projektdokumentation (Fotos in docs/images/)
 │   └── mockups/                  Oberflächenentwürfe (SVG)
 ├── tests/host/                   Unit-Tests für den Entwicklungsrechner
 ├── tools/                        Hilfsskripte (z. B. Erzeugung der Flugzeugsymbole)
