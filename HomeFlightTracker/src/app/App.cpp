@@ -128,10 +128,13 @@ bool App::runBootRecovery() {
   tft_.setTextDatum(MC_DATUM);
   tft_.setTextColor(ui::kColorAccent, ui::kColorBackground);
   tft_.drawString("HomeFlightTracker", cx, cy - 50, ui::fittingFont(tft_, "HomeFlightTracker"));
+  tft_.setTextColor(ui::kColorText, ui::kColorBackground);
+  tft_.drawString(String("Version ") + kFirmwareVersion, cx, cy - 22, 2);
   tft_.setTextColor(ui::kColorMuted, ui::kColorBackground);
-  tft_.drawString(String("Firmware ") + kFirmwareVersion, cx, cy - 22, 2);
-  tft_.drawString("Antippen: Touch kalibrieren", cx, cy + 20, 2);
-  tft_.drawString("8 s halten: Werksreset", cx, cy + 40, 2);
+  tft_.drawString(String("von ") + kFirmwareAuthor, cx, cy - 4, 2);
+  tft_.setTextColor(ui::kColorStale, ui::kColorBackground);
+  tft_.drawString("Antippen: Touch kalibrieren", cx, cy + 26, 2);
+  tft_.drawString("8 s halten: Werksreset", cx, cy + 44, 2);
 
   const uint32_t start = millis();
   while (millis() - start < kRecoveryWindowMs) {

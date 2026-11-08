@@ -15,6 +15,7 @@ Format angelehnt an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 - Flugzeugsymbol als vorgedrehte, kantengeglättete Bitmaps (24 Richtungen) statt zur Laufzeit gedrehter Dreiecke, die bei 14 px ausfransten.
 - Beschriftung des äußeren Rings entfernt; sie überdeckte das „N“.
 - Kurzinfo zeigt bei Flugzeugen am Boden „am Boden“ statt „- m“.
+- Startbildschirm zeigt Version und Autor (Firmware 0.4.1).
 - Ohne Auswahl wird das nächstgelegene Flugzeug automatisch mit einer neutralen Kurzinfo beschriftet; Antippen öffnet die Details.
 
 #### Hinzugefügt
