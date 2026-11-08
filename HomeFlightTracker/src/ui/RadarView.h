@@ -40,7 +40,7 @@ class RadarView {
  private:
   static constexpr int16_t kCenter = kSize / 2;
   static constexpr int16_t kRadius = 112;
-  static constexpr int16_t kHitRadius = 18;
+  static constexpr int16_t kHitRadius = 20;
 
   bool project(const Aircraft& aircraft, uint16_t rangeKm, int16_t& x, int16_t& y) const;
   void drawBackground(TFT_eSPI& canvas, int16_t oy, const Info& info, uint16_t count);

@@ -76,6 +76,7 @@ HomeFlightTracker/
 ├── docs/                         Projektdokumentation
 │   └── mockups/                  Oberflächenentwürfe (SVG)
 ├── tests/host/                   Unit-Tests für den Entwicklungsrechner
+├── tools/                        Hilfsskripte (z. B. Erzeugung der Flugzeugsymbole)
 ├── CHANGELOG.md
 └── README.md
 ```

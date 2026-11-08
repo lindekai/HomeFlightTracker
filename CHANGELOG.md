@@ -10,6 +10,12 @@ Format angelehnt an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 ### M4 – Radar-Oberfläche
 
+#### Geändert (nach erstem Test am Gerät)
+
+- Flugzeugsymbol als vorgedrehte, kantengeglättete Bitmaps (24 Richtungen) statt zur Laufzeit gedrehter Dreiecke, die bei 14 px ausfransten.
+- Beschriftung des äußeren Rings entfernt; sie überdeckte das „N“.
+- Kurzinfo zeigt bei Flugzeugen am Boden „am Boden“ statt „- m“.
+
 #### Hinzugefügt
 
 - Radar im 8-Bit-Sprite (flackerfrei):

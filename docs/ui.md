@@ -47,6 +47,8 @@ Das Portal ist in fünf Schritte gegliedert: WLAN, Standort (Suche oder Koordina
   - Antippen wählt das nächstgelegene Symbol im Umkreis von 18 px.
   - Bei Überlappung wechselt erneutes Antippen zum nächsten Kandidaten.
   - Ist nur ein Kandidat vorhanden und bereits ausgewählt, öffnen sich die Details. Das gilt auch beim Antippen der Kurzinfo.
+- **Flugzeugsymbol:** 17 × 17 px, vorgedreht in 24 Richtungen (15°-Schritte) mit Kantenglättung (2 Bit Deckung, Randpixel mit dem Hintergrund gemischt). Die Bitmaps erzeugt `tools/gen_icons.py` aus einer Vektor-Silhouette; das Gerät dreht nicht selbst. Flugzeuge am Boden: blaugrau, Kurzinfo „am Boden“ statt Höhe.
+- **Ringbeschriftung:** Nur der halbe Radius ist am Ring beschriftet; der volle Radius steht oben rechts.
 - **Abweichungen vom Mockup:**
   - Statt Pfeiltasten heißen die Schaltflächen der Liste „Zurück“ und „Weiter“.
   - Die Ortssuche im Portal folgt in M5.

@@ -3,22 +3,12 @@
 #include <math.h>
 #include <string.h>
 
+#include "AircraftIcons.h"
 #include "Widgets.h"
 
 namespace {
 
 constexpr float kDegToRad = static_cast<float>(M_PI / 180.0);
-
-// Flugzeugsilhouette mit Nase nach oben (Bildschirm-y nach unten), als Dreiecke.
-struct Point {
-  float x;
-  float y;
-};
-constexpr Point kShape[][3] = {
-    {{0, -7}, {-1.6f, 5}, {1.6f, 5}},   // Rumpf
-    {{0, -2}, {-7, 2.5f}, {7, 2.5f}},   // Tragflächen
-    {{0, 3.5f}, {-3, 7}, {3, 7}},       // Leitwerk
-};
 
 }  // namespace
 
@@ -78,7 +68,7 @@ void RadarView::draw(const FlightList& flights, const Info& info) {
     }
     if (selectedIndex >= 0) {
       const Aircraft& aircraft = flights[selectedIndex];
-      canvas.drawCircle(selectedX, selectedY + oy, 11, ui::kColorSelected);
+      canvas.drawCircle(selectedX, selectedY + oy, 12, ui::kColorSelected);
       drawAircraft(canvas, selectedX, selectedY + oy, aircraft.trackDeg, ui::kColorSelected);
       drawLabel(canvas, oy, aircraft, selectedX, selectedY);
     }
@@ -106,8 +96,6 @@ void RadarView::drawBackground(TFT_eSPI& canvas, int16_t oy, const Info& info, u
   canvas.setTextColor(ui::kColorRingLabel, ui::kColorBackground);
   snprintf(text, sizeof(text), "%u", info.rangeKm / 2);
   ui::drawText(canvas, text, kCenter + 3, oy + kCenter - kRadius / 2 - 15);
-  snprintf(text, sizeof(text), "%u km", info.rangeKm);
-  ui::drawText(canvas, text, kCenter + 3, oy + kCenter - kRadius + 1);
   canvas.setTextColor(ui::kColorAccent, ui::kColorBackground);
   ui::drawText(canvas, "N", kCenter - 4, oy);
   canvas.setTextColor(ui::kColorRingLabel, ui::kColorBackground);
@@ -135,17 +123,19 @@ void RadarView::drawAircraft(TFT_eSPI& canvas, int16_t x, int16_t y, float track
     canvas.fillCircle(x, y, 3, color);
     return;
   }
-  const float a = trackDeg * kDegToRad;
-  const float s = sinf(a);
-  const float c = cosf(a);
-  for (const auto& triangle : kShape) {
-    int16_t px[3], py[3];
-    for (int i = 0; i < 3; ++i) {
-      // Drehung im Uhrzeigersinn (Bildschirm-y zeigt nach unten).
-      px[i] = x + static_cast<int16_t>(lroundf(triangle[i].x * c - triangle[i].y * s));
-      py[i] = y + static_cast<int16_t>(lroundf(triangle[i].x * s + triangle[i].y * c));
+  // Vorgedrehte Bitmap der nächstgelegenen Richtung (15°-Schritte), Randpixel mit dem Hintergrund gemischt.
+  const uint8_t step = static_cast<uint8_t>(lroundf(trackDeg / (360.0f / icons::kAircraftSteps))) % icons::kAircraftSteps;
+  const uint8_t* bitmap = icons::kAircraft[step];
+  const int16_t left = x - icons::kAircraftSize / 2;
+  const int16_t top = y - icons::kAircraftSize / 2;
+  uint16_t blended[4] = {0, canvas.alphaBlend(85, color, ui::kColorBackground),
+                         canvas.alphaBlend(170, color, ui::kColorBackground), color};
+  for (int16_t row = 0; row < icons::kAircraftSize; ++row) {
+    const uint8_t* line = bitmap + row * icons::kAircraftBytesPerRow;
+    for (int16_t col = 0; col < icons::kAircraftSize; ++col) {
+      const uint8_t level = (line[col / 4] >> (6 - 2 * (col % 4))) & 0x03;
+      if (level != 0) canvas.drawPixel(left + col, top + row, blended[level]);
     }
-    canvas.fillTriangle(px[0], py[0], px[1], py[1], px[2], py[2], color);
   }
 }
 
@@ -155,7 +145,9 @@ void RadarView::drawLabel(TFT_eSPI& canvas, int16_t oy, const Aircraft& aircraft
   char distance[12];
   snprintf(line1, sizeof(line1), "%s", aircraft.callsign[0] ? aircraft.callsign : aircraft.icao24);
   ui::formatDecimal(distance, sizeof(distance), aircraft.distanceKm, 1);
-  if (isnan(aircraft.baroAltitudeM)) {
+  if (aircraft.onGround) {
+    snprintf(line2, sizeof(line2), "am Boden  %s km", distance);
+  } else if (isnan(aircraft.baroAltitudeM)) {
     snprintf(line2, sizeof(line2), "- m  %s km", distance);
   } else {
     snprintf(line2, sizeof(line2), "%.0f m  %s km", aircraft.baroAltitudeM, distance);
