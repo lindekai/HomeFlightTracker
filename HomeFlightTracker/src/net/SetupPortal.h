@@ -6,6 +6,7 @@
 #include <WebServer.h>
 
 #include "../config/AppConfig.h"
+#include "../opensky/OpenSkyService.h"
 #include "WifiManager.h"
 
 class SetupPortal {
@@ -15,6 +16,8 @@ class SetupPortal {
   SetupPortal(AppConfig& config, WifiManager& wifi) : config_(config), wifi_(wifi), server_(80) {}
 
   void begin(Mode mode, const char* firmwareVersion);
+  // Im Heimnetz: Dienst für den Test der OpenSky-Zugangsdaten.
+  void setOpenSkyService(OpenSkyService* service) { opensky_ = service; }
   void loop();
 
   // true, sobald eine Konfiguration gespeichert wurde und ein Neustart ansteht.
@@ -36,10 +39,13 @@ class SetupPortal {
   void handleWifiTestStart();
   void handleWifiTestStatus();
   void handleConfig();
+  void handleOpenSkyTestStart();
+  void handleOpenSkyTestStatus();
   void handleNotFound();
 
   AppConfig& config_;
   WifiManager& wifi_;
+  OpenSkyService* opensky_ = nullptr;
   WebServer server_;
   DNSServer dns_;
   Mode mode_ = Mode::Lan;

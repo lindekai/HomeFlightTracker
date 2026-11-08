@@ -51,6 +51,7 @@ button:disabled{opacity:.5}
 <label for="cid">Client-ID</label><input id="cid" maxlength="95" autocomplete="off">
 <label for="csec">Client-Secret</label><input id="csec" type="password" maxlength="127" autocomplete="new-password">
 <label style="display:flex;gap:8px;align-items:center;color:var(--text)"><input id="cclear" type="checkbox" style="width:auto"> Zugang entfernen (anonymer Betrieb)</label>
+<div id="otestrow"><button id="otest" type="button">Zugang testen</button> <span id="otestmsg" class="hint"></span></div>
 <div class="hint">API-Client im OpenSky-Konto anlegen. Ohne Zugang nur stark gedrosselter anonymer Betrieb.</div>
 </section>
 
@@ -82,6 +83,7 @@ async function load(){
  $('ssid').value=st.wifi.ssid||'';
  $('wpass').placeholder=st.wifi.hasPassword?'gespeichert – leer lassen = unverändert':'';
  $('testrow').style.display=st.mode==='setup'?'':'none';
+ $('otestrow').style.display=st.mode==='lan'?'':'none';
  if(st.location.set){$('lat').value=st.location.lat.toFixed(5);$('lon').value=st.location.lon.toFixed(5)}
  $('lname').value=st.location.name||'';
  $('cid').value=st.opensky.clientId||'';
@@ -108,6 +110,11 @@ $('wtest').onclick=async()=>{$('wtestmsg').className='hint';$('wtestmsg').textCo
  if(s.error){$('wtestmsg').className='hint err';$('wtestmsg').textContent=s.error;return}
  for(let i=0;i<40;i++){await new Promise(r=>setTimeout(r,1000));const r=await api('/api/wifi/test');
   if(r.state!=='running'){$('wtestmsg').className='hint '+(r.state==='ok'?'ok':'err');$('wtestmsg').textContent=(r.state==='ok'?'✓ ':'✗ ')+r.message;return}}};
+$('otest').onclick=async()=>{$('otestmsg').className='hint';$('otestmsg').textContent='Teste …';
+ const s=await api('/api/opensky/test',{clientId:$('cid').value.trim(),clientSecret:$('csec').value});
+ if(s.error){$('otestmsg').className='hint err';$('otestmsg').textContent=s.error;return}
+ for(let i=0;i<30;i++){await new Promise(r=>setTimeout(r,1000));const r=await api('/api/opensky/test');
+  if(r.state!=='running'){$('otestmsg').className='hint '+(r.state==='ok'?'ok':'err');$('otestmsg').textContent=(r.state==='ok'?'✓ ':'✗ ')+r.message;return}}};
 $('save').onclick=async()=>{const lat=parseFloat($('lat').value),lon=parseFloat($('lon').value);
  const body={wifiSsid:$('ssid').value.trim(),wifiPassword:$('wpass').value,wifiOpen:$('wopen').checked,lat:isNaN(lat)?null:lat,lon:isNaN(lon)?null:lon,
   locationName:$('lname').value.trim(),clientId:$('cid').value.trim(),clientSecret:$('csec').value,clearOpensky:$('cclear').checked,

@@ -8,6 +8,35 @@ Format angelehnt an [Keep a Changelog](https://keepachangelog.com/de/1.1.0/).
 
 - MIT-Lizenz hinzugefügt.
 
+### M4 – Radar-Oberfläche
+
+#### Hinzugefügt
+
+- Radar im 8-Bit-Sprite (flackerfrei):
+  - Norden oben, vier Entfernungsringe mit Beschriftung, Himmelsrichtungen
+  - Flugzeugsilhouetten in Bewegungsrichtung
+  - Kennzeichnung für „am Boden“ und veraltete Positionen
+  - Auswahl mit Kurzinfo
+- Robuste Auswahl bei überlappenden Symbolen (Durchschalten), Details per Kurzinfo oder erneutem Antippen.
+- Detailansicht mit eindeutigen Einheiten und dem Hinweis, dass Typ, Registrierung und Start/Ziel nicht geliefert werden.
+- Flugliste nach Entfernung mit Richtungspfeilen und Blättern.
+- Menü mit WLAN-, OpenSky- und Credit-Status.
+- Zoom 25/50/100 km mit Kontingentprüfung; wirkt ab dem nächsten regulären Abruf.
+- Statusleiste mit WLAN- und OpenSky-Ampel und Uhrzeit; Fußzeile mit „Stand … · vor n s“.
+- Umlaute auf dem Display über eigene UTF-8-Textausgabe.
+
+### M3 – OpenSky-Abruf
+
+#### Hinzugefügt
+
+- NTP-Zeit (Europa/Berlin).
+- TLS mit Zertifikatsprüfung über das eingebettete Root-CA-Bundle.
+- OAuth2 Client Credentials mit Token-Erneuerung vor Ablauf und einmaliger Neuanmeldung bei 401.
+- `/states/all` mit Bounding Box (inkl. Datumsgrenze), Streaming-Parser für beliebig viele Flugzeuge, Tabelle der 100 nächsten.
+- Hintergrund-Task mit exaktem Takt, Rate-Limit-Auswertung, Backoff bei 429/5xx/Netzwerkfehlern, Auth-Fehlerstatus.
+- „Zugang testen“ für OpenSky in der Weboberfläche.
+- Host-Tests für Parser und Flugliste (Null-Felder, fehlende Koordinaten, doppelte Callsigns, Kurs 0°/359°, leere Ergebnisse, abgebrochene Antworten); insgesamt 84 Prüfungen.
+
 ### M2 – Konfiguration und WLAN-Einrichtung
 
 #### Hinzugefügt

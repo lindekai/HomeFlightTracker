@@ -39,16 +39,21 @@ Das Portal ist in fünf Schritte gegliedert: WLAN, Standort (Suche oder Koordina
 - Den Tagesverbrauch an Credits rechnet das Portal live aus der Reichweite und dem Intervall aus.
 - Geheimnisse werden nach dem Speichern nie wieder angezeigt.
 
-## Umsetzungsstand
+## Umsetzungsstand (M4)
 
-- **M2:** Statt des Radars zeigt das Gerät vorerst einen Statusbildschirm (WLAN, IP, Standort, Radius, Credit-Verbrauch) mit den Schaltflächen Setup, Kalibr. und Diagnose.
-- **Abweichungen des Portals vom Mockup:**
-  - Die Ortssuche (Geocoding) folgt in M5; bis dahin werden Koordinaten eingegeben.
-  - „Verbindung testen“ für OpenSky folgt in M3.
+- **Radar, Details, Liste** wie in den Mockups. Das frühere Statusbild ist jetzt das **Menü**: WLAN, IP-Adresse, Standort, OpenSky-Status, letzter Abruf, Credits und die Schaltflächen Radar, Setup, Kalibr. und Diag.
+- **Zoom:** **+** = hineinzoomen (kleinerer Radius), **−** = herauszoomen. Ein größerer Radius wird erst beim nächsten regulären Abruf mit Daten gefüllt; der Hinweis erscheint in der Fußzeile. Die Reichweite wird gespeichert.
+- **Auswahl:**
+  - Antippen wählt das nächstgelegene Symbol im Umkreis von 18 px.
+  - Bei Überlappung wechselt erneutes Antippen zum nächsten Kandidaten.
+  - Ist nur ein Kandidat vorhanden und bereits ausgewählt, öffnen sich die Details. Das gilt auch beim Antippen der Kurzinfo.
+- **Abweichungen vom Mockup:**
+  - Statt Pfeiltasten heißen die Schaltflächen der Liste „Zurück“ und „Weiter“.
+  - Die Ortssuche im Portal folgt in M5.
 - **Ausrichtung:** Die Oberfläche ist für das Hochformat (Rotation 0) ausgelegt.
 
 ## Gestaltungsregeln
 
 - Dunkles, sachliches Aviation-Design. Lesbarkeit und Performance haben Vorrang vor Effekten.
 - Farben: Hintergrund `#050B10`, Radarringe `#1F6F4A`, Flugzeuge `#FFD34D`, Auswahl `#FF7A3D`, Text `#D8E6DC`, gedämpfter Text `#8FB3A0`, veraltet `#5D6B66`.
-- **Schriften:** Die eingebauten Fonts von TFT_eSPI enthalten keine Umlaute. Bis M4 wird ein Font mit Latin-1-Zeichensatz eingebunden. Die M1-Testoberfläche umschreibt Umlaute deshalb noch.
+- **Schriften:** Die eingebauten Fonts von TFT_eSPI enthalten keine Umlaute. Für Font 2 (16 px) zeichnet `ui::drawText` ä/ö/ü/Ä/Ö/Ü als Grundbuchstabe mit zwei Punkten, ß als „ss“ und ° über das Gradzeichen des Fonts. Große Überschriften (Font 4) verwenden nur Text ohne Umlaute. Diagnose- und Startbildschirm umschreiben Umlaute noch.

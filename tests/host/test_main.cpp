@@ -3,8 +3,12 @@
 #include <math.h>
 #include <stdio.h>
 
+#include <string.h>
+
 #include "../../HomeFlightTracker/src/geo/Geo.h"
+#include "../../HomeFlightTracker/src/model/FlightList.h"
 #include "../../HomeFlightTracker/src/opensky/Quota.h"
+#include "../../HomeFlightTracker/src/opensky/StatesParser.h"
 
 namespace {
 
@@ -117,6 +121,101 @@ void testQuota() {
   CHECK(!opensky::isIntervalAllowed(1000, 5.3, true));
 }
 
+class StringSource : public opensky::JsonByteSource {
+ public:
+  explicit StringSource(const char* text) : text_(text) {}
+  int read() override { return *text_ ? static_cast<unsigned char>(*text_++) : -1; }
+  int peek() override { return *text_ ? static_cast<unsigned char>(*text_) : -1; }
+
+ private:
+  const char* text_;
+};
+
+bool parse(const char* json, FlightList& list, opensky::ParseStats& stats, double rangeKm = 50.0) {
+  StringSource source(json);
+  list.clear();
+  return opensky::parseStates(source, kCenter, rangeKm, list, stats);
+}
+
+void testParser() {
+  FlightList list;
+  opensky::ParseStats stats;
+
+  // Vollständiger Datensatz, Kurs 359°, Callsign mit Leerzeichen am Ende
+  const char* full =
+      "{\"time\":1762600000,\"states\":[[\"3c6589\",\"DLH123  \",\"Germany\",1762599998,1762599999,"
+      "13.0,52.4,7600.5,false,206.1,359.0,-6.5,null,7725.0,\"1000\",false,0]]}";
+  CHECK(parse(full, list, stats));
+  CHECK(stats.apiTime == 1762600000);
+  CHECK(stats.received == 1 && stats.inRange == 1 && list.size() == 1);
+  CHECK(strcmp(list[0].callsign, "DLH123") == 0);
+  CHECK(strcmp(list[0].icao24, "3c6589") == 0);
+  CHECK(strcmp(list[0].squawk, "1000") == 0);
+  CHECK_NEAR(list[0].trackDeg, 359.0, 1e-3);
+  CHECK_NEAR(list[0].baroAltitudeM, 7600.5, 1e-3);
+  CHECK(list[0].positionSource == 0);
+  CHECK(list[0].timePosition == 1762599998);
+  CHECK(list[0].bearingDeg > 270.0f);  // nordwestlich des Zentrums
+
+  // Null-Felder: kein Callsign, keine Höhe/Geschwindigkeit/Kurs, kein Squawk, Kurs 0°
+  const char* nulls =
+      "{\"time\":1,\"states\":[[\"abc123\",null,\"Poland\",null,5,13.1,52.31,null,true,null,0,null,null,"
+      "null,null,false,null]]}";
+  CHECK(parse(nulls, list, stats));
+  CHECK(list.size() == 1);
+  CHECK(list[0].callsign[0] == '\0');
+  CHECK(isnan(list[0].baroAltitudeM) && isnan(list[0].velocityMs) && isnan(list[0].verticalRateMs));
+  CHECK_NEAR(list[0].trackDeg, 0.0, 1e-6);
+  CHECK(list[0].squawk[0] == '\0');
+  CHECK(list[0].timePosition == 0 && list[0].lastContact == 5);
+  CHECK(list[0].onGround);
+  CHECK(list[0].positionSource == 255);
+
+  // Fehlende Koordinaten, außerhalb des Radius, doppelte Callsigns
+  const char* mixed =
+      "{\"time\":2,\"states\":[\n"
+      "[\"a00001\",\"DUP1\",\"X\",1,1,null,null,1000,false,100,90,0,null,1000,null,false,0],\n"
+      "[\"a00002\",\"DUP1\",\"X\",1,1,13.2,52.35,1000,false,100,90,0,null,1000,null,false,0],\n"
+      "[\"a00003\",\"DUP1\",\"X\",1,1,13.3,52.32,1000,false,100,90,0,null,1000,null,false,0],\n"
+      "[\"a00004\",\"FAR\",\"X\",1,1,16.0,52.3,1000,false,100,90,0,null,1000,null,false,0]\n"
+      "]}";
+  CHECK(parse(mixed, list, stats));
+  CHECK(stats.received == 4 && stats.withPosition == 3 && stats.inRange == 2 && list.size() == 2);
+
+  // Leere Ergebnisse
+  CHECK(parse("{\"time\":3,\"states\":null}", list, stats));
+  CHECK(list.size() == 0 && stats.apiTime == 3);
+  CHECK(parse("{\"time\":4,\"states\":[]}", list, stats));
+  CHECK(list.size() == 0 && stats.received == 0);
+
+  // Abgebrochener Datenstrom und falsches Format
+  CHECK(!parse("{\"time\":5,\"states\":[[\"a\",\"B\",\"C\",1,1,13.1,52.3", list, stats));
+  CHECK(!parse("<html>Too many requests</html>", list, stats));
+  CHECK(!parse("{\"time\":6,\"states\":[[1,2]x", list, stats));
+}
+
+void testFlightList() {
+  FlightList list;
+  list.clear();
+  Aircraft aircraft{};
+  for (int i = 0; i < FlightList::kCapacity; ++i) {
+    aircraft.distanceKm = 10.0f + i;
+    list.add(aircraft);
+  }
+  CHECK(list.size() == FlightList::kCapacity);
+  aircraft.distanceKm = 5.0f;  // näher als alle: ersetzt das entfernteste (109 km)
+  list.add(aircraft);
+  aircraft.distanceKm = 500.0f;  // weiter als alle: verworfen
+  list.add(aircraft);
+  CHECK(list.size() == FlightList::kCapacity && list.dropped() == 2);
+  list.sortByDistance();
+  CHECK_NEAR(list[0].distanceKm, 5.0, 1e-6);
+  CHECK_NEAR(list[FlightList::kCapacity - 1].distanceKm, 108.0, 1e-6);
+  bool sorted = true;
+  for (int i = 1; i < list.size(); ++i) sorted &= list[i - 1].distanceKm <= list[i].distanceKm;
+  CHECK(sorted);
+}
+
 }  // namespace
 
 int main() {
@@ -125,6 +224,8 @@ int main() {
   testBoundingBox();
   testValidity();
   testQuota();
+  testParser();
+  testFlightList();
   printf("%d Prüfungen, %d Fehler\n", checks, failures);
   return failures == 0 ? 0 : 1;
 }

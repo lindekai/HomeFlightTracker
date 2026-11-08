@@ -73,6 +73,18 @@ Anonymer Betrieb ist nur als klar gekennzeichneter Notbetrieb vorgesehen: mindes
 
 Die API liefert **weder Flugzeugtyp noch Registrierung noch Start- oder Zielflughafen**. Diese Angaben werden weder angezeigt noch aus dem Callsign abgeleitet.
 
+## Umsetzung (M3)
+
+- **TLS:** HTTPS mit Zertifikatsprüfung gegen das vollständige Mozilla-Root-CA-Bundle, das der ESP32-Arduino-Core in die Firmware einbettet (`_binary_x509_crt_bundle_start`). Die Prüfung wird nirgends abgeschaltet. Voraussetzung ist eine gültige Uhrzeit (NTP).
+- **Token:** `POST` an den Token-Endpunkt mit `grant_type=client_credentials`, Client-ID und Secret URL-kodiert. Das Token liegt nur im RAM und wird nie geloggt.
+- **Abruf:** `GET /api/states/all` mit Bounding Box, `Authorization: Bearer …`, HTTP/1.0 (kein Chunked-Encoding, Antwort direkt als Datenstrom).
+- **Auswertung:** Die Antwort wird als Datenstrom gelesen, jeder State-Vektor einzeln (siehe `src/opensky/StatesParser.cpp`). Erwartet wird die Reihenfolge `{"time":…,"states":…}`.
+- **Zugangstest:** Die Weboberfläche im Heimnetz hat die Schaltfläche „Zugang testen“; sie fordert testweise ein Token an.
+
+Erste Messungen am 2026-11-08 (Standort bei Berlin, 50 km und 25 km Radius, nachts): Token HTTP 200; Abrufe HTTP 200 mit 1 Credit; `X-Rate-Limit-Remaining` wird geliefert (3999 → 3995); Dauer 0,6–1,5 s.
+
+Zusätzlich wurde eine reale anonyme Antwort (Mitteleuropa, 68 State-Vektoren) mit dem Parser auf dem Entwicklungsrechner ausgewertet: alle 68 Vektoren gelesen, Werte plausibel.
+
 ## Nutzungsbedingungen und Attribution
 
 - Laut API-Dokumentation ist die REST-API für **Forschung und nicht-kommerzielle Zwecke** vorgesehen. Für kommerzielle Nutzung ist eine Vereinbarung mit OpenSky nötig.

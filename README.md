@@ -9,7 +9,16 @@ Eigenständiges Tisch- und Wandgerät, das Flugbewegungen rund um einen frei wä
 </p>
 <p align="center"><sub>Mockups der geplanten Oberfläche (240 × 320 px, Beispieldaten). Weitere Entwürfe: <a href="docs/ui.md">docs/ui.md</a></sub></p>
 
-> **Projektstatus:** in Entwicklung. Abgeschlossen ist der Hardware-Machbarkeitstest (M1); die Einrichtung ohne PC (M2) wird getestet. Das Radar selbst entsteht ab M4, siehe [Roadmap](#roadmap).
+> **Projektstatus:** in Entwicklung. M1 und M2 sind abgenommen; OpenSky-Abruf (M3) und Radar-Oberfläche (M4) sind umgesetzt und im Test, siehe [Roadmap](#roadmap).
+
+## Bedienung
+
+| Bildschirm | Bedienung |
+|---|---|
+| Radar | Flugzeug antippen = auswählen (Kurzinfo); Kurzinfo oder erneutes Antippen = Details; überlappende Symbole: erneut antippen wechselt zum nächsten. **+** / **−** = hinein-/herauszoomen (25/50/100 km) |
+| Details | Werte aus OpenSky mit Einheiten; „–“ = nicht verfügbar |
+| Liste | nach Entfernung sortiert, Zeile antippen = Details, blättern mit Zurück/Weiter |
+| Menü | WLAN, IP-Adresse, Standort, OpenSky-Status, letzter Abruf, Credits; Setup, Kalibrierung, Diagnose |
 
 ## Funktionen (Ziel des MVP)
 
@@ -60,9 +69,10 @@ HomeFlightTracker/
 │       ├── diag/                 Heap- und Ressourcenmessung
 │       ├── geo/                  Distanz, Peilung, Bounding Box
 │       ├── hwtest/               Diagnosemodus (Hardwaretest)
-│       ├── net/                  WLAN, Setup-Portal, Weboberfläche
-│       ├── opensky/              OpenSky-Kontingent (ab M3: API-Client)
-│       └── ui/                   Touch-Eingabe und Bedienelemente
+│       ├── model/                Flugzeugdaten (Tabelle fester Größe)
+│       ├── net/                  WLAN, NTP, Setup-Portal, Weboberfläche
+│       ├── opensky/              OAuth2, Abruf, Streaming-Parser, Kontingent, Hintergrund-Task
+│       └── ui/                   Radar, Bedienelemente, Text mit Umlauten, Touch
 ├── docs/                         Projektdokumentation
 │   └── mockups/                  Oberflächenentwürfe (SVG)
 ├── tests/host/                   Unit-Tests für den Entwicklungsrechner
@@ -90,9 +100,9 @@ Die geplante Struktur der späteren Module steht in [docs/architecture.md](docs/
 |---|---|---|
 | M0 | Projektgerüst, Dokumentation, Pin-Matrix | ✅ erledigt |
 | M1 | Hardware-Machbarkeit: Display, Rotation, Backlight, Touch-Kalibrierung, Heap-Basiswerte | ✅ abgenommen |
-| M2 | Konfiguration und WLAN-Provisioning (Setup-AP, Captive Portal, Web-UI, Werksreset) | 🧪 Code fertig, Test auf Hardware läuft |
-| M3 | OpenSky-Client (NTP, TLS, OAuth2, Bounding Box, JSON, Kontingent, Backoff) | geplant |
-| M4 | Radar-Oberfläche (Symbole, Details, Liste, Reichweite, Status) | geplant |
+| M2 | Konfiguration und WLAN-Provisioning (Setup-AP, Captive Portal, Web-UI, Werksreset) | ✅ abgenommen |
+| M3 | OpenSky-Client (NTP, TLS, OAuth2, Bounding Box, JSON, Kontingent, Backoff) | 🧪 umgesetzt, Test auf Hardware läuft |
+| M4 | Radar-Oberfläche (Symbole, Details, Liste, Reichweite, Status) | 🧪 umgesetzt, Test mit Flugverkehr ausstehend |
 | M5 | Robustheit (Geocoding, mDNS, Watchdog, Langzeittest, Review, Release) | geplant |
 
 Bewusst **nicht** Teil des MVP sind: ADS-B-Empfänger, Abflug- und Ankunftstafeln, Routen- oder Zielermittlung, Cloud-Konto, Kartenkacheln, Push-Benachrichtigungen und Audio.

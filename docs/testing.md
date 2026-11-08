@@ -68,13 +68,25 @@ Messung vom 2026-11-08 ohne aktives WLAN. **Folgerung:** Ein 16-Bit-Vollsprite f
 tests/host/run.sh
 ```
 
-Stand M2: 50 Prüfungen, 0 Fehler. Geprüft werden:
+Stand M3: 84 Prüfungen, 0 Fehler. Geprüft werden:
 
 - Distanz: Nullstrecke, 1° Breite, Berlin–München, Symmetrie
 - Peilung: Nord, Süd, Ost, West, Nordwest, Wertebereich
 - Bounding Box: 100 km bei 52,3° N, Punkte auf dem Kreis, Datumsgrenze, Polnähe, hohe Breiten
 - Gültigkeit von Koordinaten, Normalisierung des Längengrads
 - Credits je Flächenstufe, Tagesverbrauch, kürzestes zulässiges Intervall (authentifiziert und anonym)
+- Parser:
+  - vollständiger Datensatz
+  - Null-Felder
+  - fehlende Koordinaten
+  - außerhalb des Radius
+  - doppelte Callsigns
+  - Kurs 0° und 359°
+  - `states: null` und leeres Array
+  - abgebrochener Datenstrom, HTML statt JSON, defektes JSON
+- Flugliste: Kapazitätsgrenze (die nächsten bleiben), Sortierung
+
+Zusätzlich wurde eine reale OpenSky-Antwort (68 State-Vektoren) auf dem Entwicklungsrechner geparst.
 
 ## M2 – Konfiguration und WLAN-Einrichtung
 
@@ -98,8 +110,37 @@ Stand M2: 50 Prüfungen, 0 Fehler. Geprüft werden:
 | 2.16 | Diagnose | Status → Diagnose zeigt den Hardwaretest; Info → Neustart kehrt zurück | ☐ |
 | 2.17 | Setup-Timeout | nach 15 min ohne Speichern Neustart (mit Konfiguration: Normalbetrieb) | ☐ |
 
+**Abnahme M2:** am 2026-11-08 durch den Projektverantwortlichen erteilt (Einrichtung, Kalibrierung, Statusanzeige und WLAN-Verbindung am Gerät geprüft).
+
+## M3 – OpenSky-Abruf
+
+| Nr. | Prüfung | Erwartung | Ergebnis |
+|---|---|---|---|
+| 3.1 | NTP | Uhrzeit in der Statusleiste korrekt (MEZ/MESZ) | ☐ |
+| 3.2 | TLS + OAuth2 | seriell „Token: ok (HTTP 200)“, keine Zugangsdaten im Log | ✅ 2026-11-08 |
+| 3.3 | `/states/all` | HTTP 200, 1 Credit je Abruf, `X-Rate-Limit-Remaining` sinkt um 1 | ✅ 3999 → 3995 |
+| 3.4 | Takt | Abstand der Abrufe = Intervall (60 s) | ✅ seriell bestätigt |
+| 3.5 | Reale Daten | Flugzeuge mit plausiblen Werten (Gerät bei Flugverkehr) | ☐ (nachts kein Verkehr; Parser mit realer Antwort am Rechner ✅) |
+| 3.6 | Falsches Secret | „Zugang testen“ meldet „Anmeldung abgelehnt“; im Betrieb Auth-Fehlerstatus ohne Endlosschleife | ☐ |
+| 3.7 | Token-Erneuerung | nach > 25 min neuer Token ohne Unterbrechung | ☐ |
+| 3.8 | Netzwerkausfall | Router aus: Status „warte auf WLAN“ bzw. Fehler mit Backoff; danach automatische Fortsetzung | ☐ |
+| 3.9 | Heap-Stabilität | ≥ 100 Abrufe ohne fallenden Trend des freien Heaps | ☐ (erste 5 Abrufe stabil bei ca. 104 KB) |
+| 3.10 | Kein Abruf durch Touch | beliebige Bedienung ändert den Abruftakt nicht | ☐ |
+
+## M4 – Radar-Oberfläche
+
+| Nr. | Prüfung | Erwartung | Ergebnis |
+|---|---|---|---|
+| 4.1 | Darstellung | Ringe, N oben, Symbole zeigen in Flugrichtung, Positionen passen zur Realität (z. B. Vergleich mit einer Flugverfolgungs-Website) | ☐ |
+| 4.2 | Geometrie | Flugzeug nördlich erscheint oben, östlich rechts; Entfernung in Kurzinfo = Position im Ringraster | ☐ |
+| 4.3 | Auswahl | Antippen wählt, Kurzinfo öffnet Details; bei überlappenden Symbolen schaltet erneutes Antippen durch | ☐ |
+| 4.4 | Details | Einheiten m, km/h, °, m/s, km; fehlende Werte „-“; Hinweis zu Typ/Start/Ziel; „Letzter Kontakt“ zählt hoch | ☐ |
+| 4.5 | Liste | sortiert nach Entfernung, Blättern, Zeile öffnet Details | ☐ |
+| 4.6 | Zoom | + / − wechselt 25/50/100 km, bleibt nach Neustart erhalten, löst keinen Abruf aus | ☐ |
+| 4.7 | Veraltete Daten | WLAN aus: nach 3 Intervallen „Daten veraltet“ (grau), nach 15 min „Keine aktuellen Daten“ | ☐ |
+| 4.8 | Umlaute | „Menü“, „Höhe“, „Credits übrig“, „Nächster Abruf“ korrekt lesbar | ☐ |
+| 4.9 | Keine Flugzeuge | leeres Radar mit „0 Flugz.“, Liste „Keine Flugzeuge im Radius“ | ✅ nachts beobachtet (seriell) |
+
 ## Spätere Testkataloge (Übersicht)
 
-- **M3:** TLS mit Zertifikatsprüfung, Token holen und erneuern, `/states/all` mit kleiner Bounding Box, Mock-Daten (Null-Felder, fehlende Koordinaten, doppelte Callsigns, Kurs 0°/359°, leere Ergebnisse), HTTP 401/403/429/5xx, Heap über ≥ 100 Abrufe.
-- **M4:** Geometrie (Nord, Ost, Süd, West, Entfernung, Radarrand, hohe Breiten), Auswahl bei überlappenden Symbolen, kein Abruf durch Touch, Kennzeichnung veralteter Daten.
 - **M5:** Langzeittest ≥ 24 h, Stromunterbrechung, WLAN-Ausfall, Token-Ablauf, unabhängiges Code-Review.

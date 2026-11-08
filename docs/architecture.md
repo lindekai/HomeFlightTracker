@@ -52,13 +52,13 @@ HomeFlightTracker/                    Sketch-Ordner
     ├── net/PortalPage.h              HTML/JS der Weboberfläche                                  [M2]
     ├── opensky/Quota.*               Credit-Berechnung, zulässige Intervalle (host-getestet)    [M2]
     ├── ui/TouchInput.*               Kalibrierung, Touch-Ereignisse                             [M1]
-    ├── ui/Widgets.*                  Statusleiste, Schaltflächen, Textzeilen                    [M2]
-    ├── net/TimeSync.*                NTP                                                        [M3]
-    ├── opensky/TokenClient.*         OAuth2 Client Credentials, Token-Erneuerung                [M3]
-    ├── opensky/StatesClient.*        /states/all, JSON-Filter, Fehlerbehandlung, Backoff        [M3]
-    ├── model/FlightStore.*           feste Tabelle (max. 100), Snapshot                         [M3]
-    ├── ui/RadarRenderer.*            Radar, Symbole, Status                                     [M4]
-    └── ui/Screens.*                  Details, Liste, Menü, Statusbildschirme                    [M4]
+    ├── ui/Widgets.*                  Statusleiste, Schaltflächen, UTF-8-Text mit Umlauten       [M2/M4]
+    ├── net/TimeSync.*                NTP, Zeitzone Europa/Berlin                                [M3]
+    ├── model/FlightList.*            Flugzeugtabelle fester Größe (max. 100, nächste zuerst)    [M3]
+    ├── opensky/StatesParser.*        Streaming-Parser für /states/all (host-getestet)           [M3]
+    ├── opensky/OpenSkyClient.*       TLS mit CA-Bundle, OAuth2-Token, /states/all, Rate-Limit   [M3]
+    ├── opensky/OpenSkyService.*      Task auf Core 0: Takt, Token-Erneuerung, Backoff, Snapshot [M3]
+    └── ui/RadarView.*                Radar im 8-Bit-Sprite, Projektion, Symbole, Trefferlogik   [M4]
 ```
 
 Die Module ohne Arduino-Abhängigkeit (`geo/`, Parser-Logik, `QuotaTracker`) werden so geschrieben, dass sie sich auf dem Entwicklungsrechner mit einem normalen C++-Compiler testen lassen (siehe [testing.md](testing.md)).
@@ -88,11 +88,39 @@ Setup- und Diagnosewunsch werden über einen Software-Neustart im RTC-Speicher w
 - Im Heimnetz verlangt jede Anfrage eine HTTP-Digest-Anmeldung (`admin` + Geräte-Passwort). Das Passwort wird dabei nicht im Klartext übertragen.
 - Die Verbindung selbst ist **unverschlüsselt (HTTP)**: Neu eingegebene Geheimnisse (z. B. ein geändertes OpenSky-Secret) laufen im Heimnetz im Klartext. Im Setup-Modus schützt die WPA2-Verschlüsselung des Access-Points.
 
-## Betriebszustände der Radar-Anzeige (ab M4)
+## OpenSky-Abruf (M3)
 
-`Start` → `Setup erforderlich` → `WLAN verbinden` → `API verbinden` → `Radar aktiv`
+```text
+OpenSkyService (Task, Core 0)                      App (loop, Core 1)
+  warte auf WLAN → warte auf NTP                     │
+  Token gültig? sonst OAuth2-Token holen             │
+  /states/all (HTTPS, HTTP/1.0, Stream)              │
+    └─ StatesParser: Vektor für Vektor ─► FlightList (working)
+  sortieren, veröffentlichen ───── Mutex ─────► copyFlights() bei neuer Sequenznummer
+  nächster Abruf = Start + Intervall                 └─ Radar / Liste / Details neu zeichnen
+```
 
-Daneben gibt es die Zustände `Keine Flugzeuge`, `Daten veraltet`, `Auth-/Kontingentfehler` und `Einstellungen`.
+- **Takt:** Der nächste Abruf ist exakt „Startzeit + Intervall“. Der Credit-Verbrauch ist damit planbar. Touch-Bedienung löst nie einen Abruf aus.
+- **Token:** wird bei weniger als 5 Minuten Restlaufzeit erneuert. Bei `401` genau einmal sofort neu anmelden, danach Fehlerstatus mit 10 Minuten Pause.
+- **Fehler:**
+  - `429`: Pause gemäß `X-Rate-Limit-Retry-After-Seconds`.
+  - `5xx`, Netzwerk und Parser: exponentieller Backoff ab dem Intervall, höchstens 15 Minuten.
+  - `401`/`403`: Auth-Fehler, Pause 10 Minuten.
+- **Speicher:** Die Antwort wird nicht als Ganzes geladen. Jeder State-Vektor wird einzeln mit ArduinoJson gelesen; der Speicherbedarf ist unabhängig von der Anzahl der Flugzeuge. Gespeichert werden höchstens die 100 nächsten Flugzeuge.
+- **Datumsgrenze:** Die Box wird in zwei Teilabfragen zerlegt. In Polnähe umfasst die Box alle Längengrade.
+
+## Radar-Anzeige (M4)
+
+| Datenlage | Bedingung | Darstellung |
+|---|---|---|
+| Warten | noch kein erfolgreicher Abruf | Ringe, Statusmeldung in der Mitte |
+| Aktuell | letzter Abruf jünger als max(3 × Intervall, 180 s) | Symbole gelb, am Boden blaugrau, ausgewählt orange |
+| Veraltet | älter | alle Symbole grau ohne Richtung, Hinweis „Daten veraltet“ |
+| Abgelaufen | älter als max(10 × Intervall, 15 min) | keine Symbole, „Keine aktuellen Daten“ |
+
+- Einzelne Positionen, die laut Zeitstempel älter als 60 s sind, werden grau dargestellt.
+- Flugzeuge ohne Kursangabe erscheinen als Kreis statt als Richtungssymbol.
+- Zwischen den Abrufen bewegt sich nichts: Es gibt keine Interpolation.
 
 ## Geometrie
 
@@ -108,6 +136,15 @@ Daneben gibt es die Zustände `Keine Flugzeuge`, `Daten veraltet`, `Auth-/Kontin
 | Globale Variablen | 22 516 Byte (6 %) | 50 568 Byte (15 % von 327 680) |
 | Freier Heap nach Start im Setup-Modus (AP + Webserver) | – | 220 244 Byte, größter Block 110 580 Byte |
 
+| Größe (M3/M4, Normalbetrieb) | Wert |
+|---|---|
+| Programmspeicher | 1 352 348 Byte (68 % von 1 966 080) |
+| Globale Variablen | 85 808 Byte (26 %), davon 3 Fluglisten à ca. 10 KB |
+| Freier Heap nach Start (Sprite reserviert, WLAN verbunden) | 112 148 Byte |
+| Freier Heap nach OpenSky-Abrufen | stabil ca. 104 000 Byte, größter Block 38 900 Byte |
+| Minimum während TLS-Handshake | ca. 42 900 Byte |
+| Dauer eines Abrufs (inkl. TLS-Handshake) | 0,6–1,5 s |
+
 Weitere M1-Messung: freier Heap nach Display-Init (ohne WLAN) 333 156 Byte; Radar-Sprite 240 × 240 mit 8 Bit möglich (59 396 Byte), mit 16 Bit nicht allozierbar.
 
 ## Entscheidungen
@@ -122,4 +159,6 @@ Weitere M1-Messung: freier Heap nach Display-Init (ohne WLAN) 333 156 Byte; Rada
 | E6 | TLS mit Zertifikatsprüfung über das Root-CA-Bundle des ESP32-Cores | keine globale Abschaltung der Prüfung, robuster als ein festgepinntes Zertifikat |
 | E7 | Kein eigener Proxy und kein Cloud-Backend | Das Gerät arbeitet selbstständig. Ein Proxy wird nur erwogen, wenn sich ein belegter Engpass zeigt. |
 | E8 | Weboberfläche über HTTP mit Digest-Anmeldung statt HTTPS | Ein selbstsigniertes Zertifikat auf dem Gerät erzeugt Browserwarnungen und kostet RAM; die Unverschlüsselung im Heimnetz ist dokumentiert |
+| E10 | Umlaute auf dem Display über eigene UTF-8-Ausgabe (Grundbuchstabe + Punkte) | Font 2 hat keine Umlaute; ein zusätzlicher Font mit Latin-1 kostet Flash und Konvertierungsaufwand |
+| E11 | Zoom ändert die Abfragereichweite erst beim nächsten regulären Abruf | Touch löst keinen Abruf aus; der Credit-Verbrauch bleibt planbar |
 | E9 | Werksreset nur lokal (8 s Halten beim Start) | kein Reset über das Netz möglich, auch nicht bei verlorenem Passwort |

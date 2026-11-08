@@ -27,6 +27,8 @@ void SetupPortal::begin(Mode mode, const char* firmwareVersion) {
   server_.on("/api/wifi/test", HTTP_POST, [this] { handleWifiTestStart(); });
   server_.on("/api/wifi/test", HTTP_GET, [this] { handleWifiTestStatus(); });
   server_.on("/api/config", HTTP_POST, [this] { handleConfig(); });
+  server_.on("/api/opensky/test", HTTP_POST, [this] { handleOpenSkyTestStart(); });
+  server_.on("/api/opensky/test", HTTP_GET, [this] { handleOpenSkyTestStatus(); });
   server_.onNotFound([this] { handleNotFound(); });
   server_.begin();
 
@@ -293,6 +295,58 @@ void SetupPortal::handleConfig() {
   Serial.println("[web] Konfiguration gespeichert");
   sendJson(200, "{\"ok\":true}");
   restartRequested_ = true;
+}
+
+void SetupPortal::handleOpenSkyTestStart() {
+  if (!authorize() || !checkPostRequest()) return;
+  if (mode_ != Mode::Lan || opensky_ == nullptr) {
+    sendError(409, "Test erst nach dem Speichern im Heimnetz möglich");
+    return;
+  }
+  JsonDocument request;
+  if (deserializeJson(request, server_.arg("plain"))) {
+    sendError(400, "Ungültige Anfrage");
+    return;
+  }
+  const char* clientId = request["clientId"] | "";
+  const char* clientSecret = request["clientSecret"] | "";
+  // Leeres Secret bei unveränderter Client-ID: gespeichertes Secret verwenden.
+  if (clientSecret[0] == '\0' && strcmp(clientId, config_.openskyClientId) == 0) {
+    clientSecret = config_.openskyClientSecret;
+  }
+  if (clientId[0] == '\0' || clientSecret[0] == '\0') {
+    sendError(400, "Client-ID und Client-Secret angeben");
+    return;
+  }
+  opensky_->requestCredentialTest(clientId, clientSecret);
+  sendJson(202, "{\"ok\":true}");
+}
+
+void SetupPortal::handleOpenSkyTestStatus() {
+  if (!authorize()) return;
+  JsonDocument doc;
+  if (opensky_ == nullptr) {
+    doc["state"] = "idle";
+  } else {
+    switch (opensky_->testState()) {
+      case OpenSkyService::TestState::Idle:
+        doc["state"] = "idle";
+        break;
+      case OpenSkyService::TestState::Running:
+        doc["state"] = "running";
+        break;
+      case OpenSkyService::TestState::Succeeded:
+        doc["state"] = "ok";
+        break;
+      case OpenSkyService::TestState::Failed:
+        doc["state"] = "failed";
+        break;
+    }
+    doc["message"] = opensky_->testMessage();
+  }
+  String body;
+  serializeJson(doc, body);
+  sendJson(200, body);
 }
 
 void SetupPortal::handleNotFound() {

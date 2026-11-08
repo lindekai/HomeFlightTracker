@@ -1,5 +1,5 @@
 // HomeFlightTracker – Flugradar für AZ-Touch MOD (ESP32) mit Positionsdaten des OpenSky Network.
-// Stand: Meilenstein M2 (Konfiguration und WLAN-Einrichtung). Einrichtung: docs/setup.md
+// Einrichtung: docs/setup.md, Architektur: docs/architecture.md
 
 #include <TFT_eSPI.h>
 
